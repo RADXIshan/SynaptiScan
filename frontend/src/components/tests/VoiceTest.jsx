@@ -90,7 +90,7 @@ export default function VoiceTest() {
                 </div>
                 <button 
                   onClick={stopRecording}
-                  className="w-16 h-16 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 transition shadow-[0_0_20px_rgba(244,63,94,0.4)] animate-pulse"
+                  className="cursor-pointer w-16 h-16 bg-rose-500 text-white rounded-full flex items-center justify-center hover:bg-rose-600 transition shadow-[0_0_20px_rgba(244,63,94,0.4)] animate-pulse"
                 >
                   <Square size={24} fill="currentColor" />
                 </button>
@@ -99,7 +99,7 @@ export default function VoiceTest() {
             ) : (
               <button 
                 onClick={startRecording}
-                className="w-20 h-20 bg-amber-500 text-white rounded-full flex items-center justify-center hover:bg-amber-400 transition shadow-[0_0_30px_rgba(245,158,11,0.3)] group"
+                className="cursor-pointer w-20 h-20 bg-amber-500 text-white rounded-full flex items-center justify-center hover:bg-amber-400 transition shadow-[0_0_30px_rgba(245,158,11,0.3)] group"
               >
                 <Mic size={32} className="group-hover:scale-110 transition-transform" />
               </button>

@@ -11,8 +11,7 @@ export default function TestSelect() {
   const startAssessment = async () => {
     setLoading(true);
     try {
-      const response = await ingestionApi.createSession();
-      localStorage.setItem('sessionId', response.session_id);
+      await ingestionApi.createSession();
       // Sequentially, the first test is Keystroke
       navigate('/test/keystroke');
     } catch (err) {
@@ -50,7 +49,7 @@ export default function TestSelect() {
         <button 
           onClick={startAssessment}
           disabled={loading}
-          className="group w-full sm:w-auto mx-auto bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70"
+          className="cursor-pointer group w-full sm:w-auto mx-auto bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70"
         >
           {loading ? 'Initializing Session...' : 'Start Assessment'}
           {!loading && <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />}

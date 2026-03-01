@@ -171,12 +171,6 @@ export default function Profile() {
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-slate-500 mb-1">Member Since</label>
-              <div className="p-4 rounded-xl text-slate-700 bg-slate-50 border border-slate-200 inline-block w-full">
-                {new Date(user?.created_at).toLocaleDateString()}
-              </div>
-            </div>
-            <div>
               <label className="block text-sm font-medium text-slate-500 mb-1">Password</label>
               <div className="flex items-center justify-between bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <div className="flex items-center gap-3">
@@ -185,45 +179,17 @@ export default function Profile() {
                 </div>
                 <button
                   onClick={() => setIsEditingPassword(true)}
-                  className="text-sm text-emerald-600 font-medium hover:text-emerald-500 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 transition-colors"
+                  className="cursor-pointer text-sm text-emerald-600 font-medium hover:text-emerald-500 bg-emerald-50 px-3 py-1.5 rounded-lg border border-emerald-100 transition-colors"
                 >
                   Edit Password
                 </button>
               </div>
             </div>
-          </div>
-        </motion.div>
-
-        {/* Data & Privacy */}
-        <motion.div 
-          initial={{ y: 20, opacity: 0 }}
-          animate={{ y: 0, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-          className="glass rounded-3xl p-8 border border-slate-200 shadow-sm"
-        >
-          <div className="flex items-center gap-3 mb-6">
-            <Shield className="text-emerald-600" size={24} />
-            <h2 className="text-2xl font-semibold text-slate-900">Data & Privacy</h2>
-          </div>
-          
-          <div className="flex items-start gap-4 p-5 bg-emerald-50 border border-emerald-100 rounded-2xl">
-            <div className="flex-1">
-              <h3 className="font-semibold text-slate-900 mb-1">Research Data Consent</h3>
-              <p className="text-sm text-slate-600 leading-relaxed mb-4">
-                Allow internal researchers to use anonymized motor metrics to improve early-detection ML models. We never share raw identifiable inputs.
-              </p>
-              <button
-                onClick={handleConsentChange}
-                disabled={saving}
-                className={`px-5 py-2.5 rounded-xl font-medium transition-colors flex items-center gap-2 ${
-                  user?.data_consent 
-                    ? 'bg-emerald-600 hover:bg-emerald-500 text-white' 
-                    : 'bg-white border border-slate-300 hover:bg-slate-50 text-slate-700'
-                }`}
-              >
-                {saving && <Loader2 size={16} className="animate-spin" />}
-                {user?.data_consent ? 'Consent Granted (Click to Revoke)' : 'Grant Consent'}
-              </button>
+            <div>
+              <label className="block text-sm font-medium text-slate-500 mb-1">Member Since</label>
+              <div className="p-4 rounded-xl text-slate-700 bg-slate-50 border border-slate-200 inline-block w-full">
+                {new Date(user?.created_at).toLocaleDateString()}
+              </div>
             </div>
           </div>
         </motion.div>
@@ -246,7 +212,7 @@ export default function Profile() {
           
           <button
             onClick={() => setShowDeleteModal(true)}
-            className="bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-xl font-medium shadow-md shadow-rose-600/20 transition-all flex items-center gap-2"
+            className="cursor-pointer bg-rose-600 hover:bg-rose-500 text-white px-6 py-3 rounded-xl font-medium shadow-md shadow-rose-600/20 transition-all flex items-center gap-2"
           >
             Delete Account
           </button>
@@ -271,7 +237,7 @@ export default function Profile() {
               >
             <button 
               onClick={closePasswordModal}
-              className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors"
+              className="cursor-pointer absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors"
             >
               <X size={24} />
             </button>
@@ -335,14 +301,14 @@ export default function Profile() {
                 <button
                   type="button"
                   onClick={closePasswordModal}
-                  className="flex-1 px-4 py-3 rounded-xl font-medium text-slate-700 hover:bg-slate-50 border border-slate-200 transition-colors"
+                  className="cursor-pointer flex-1 px-4 py-3 rounded-xl font-medium text-slate-700 hover:bg-slate-50 border border-slate-200 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   type="submit"
                   disabled={updatingPassword || passwordSuccess}
-                  className="flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-70 text-white px-4 py-3 rounded-xl font-medium shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-2"
+                  className="cursor-pointer flex-1 bg-emerald-600 hover:bg-emerald-500 disabled:opacity-70 text-white px-4 py-3 rounded-xl font-medium shadow-md shadow-emerald-600/20 transition-all flex items-center justify-center gap-2"
                 >
                   {updatingPassword ? <Loader2 size={18} className="animate-spin" /> : null}
                   {updatingPassword ? 'Updating...' : 'Update Password'}
@@ -375,7 +341,7 @@ export default function Profile() {
             <button 
               onClick={() => !deleting && setShowDeleteModal(false)}
               disabled={deleting}
-              className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 disabled:opacity-50 transition-colors"
+              className="cursor-pointer absolute top-6 right-6 text-slate-400 hover:text-slate-600 disabled:opacity-50 transition-colors"
             >
               <X size={24} />
             </button>
@@ -393,7 +359,7 @@ export default function Profile() {
                 type="button"
                 onClick={() => setShowDeleteModal(false)}
                 disabled={deleting}
-                className="flex-1 px-4 py-3 rounded-xl font-medium text-slate-700 hover:bg-slate-50 border border-slate-200 disabled:opacity-50 transition-colors"
+                className="cursor-pointer flex-1 px-4 py-3 rounded-xl font-medium text-slate-700 hover:bg-slate-50 border border-slate-200 disabled:opacity-50 transition-colors"
               >
                 Cancel
               </button>
@@ -401,7 +367,7 @@ export default function Profile() {
                 type="button"
                 onClick={handleDeleteAccount}
                 disabled={deleting}
-                className="flex-1 bg-rose-600 hover:bg-rose-500 disabled:opacity-70 text-white px-4 py-3 rounded-xl font-medium shadow-md shadow-rose-600/20 transition-all flex items-center justify-center gap-2"
+                className="cursor-pointer flex-1 bg-rose-600 hover:bg-rose-500 disabled:opacity-70 text-white px-4 py-3 rounded-xl font-medium shadow-md shadow-rose-600/20 transition-all flex items-center justify-center gap-2"
               >
                 {deleting ? <Loader2 size={18} className="animate-spin" /> : null}
                 {deleting ? 'Deleting...' : 'Confirm Delete'}

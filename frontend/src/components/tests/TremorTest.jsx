@@ -81,7 +81,7 @@ export default function TremorTest() {
               {!isRecording ? (
                 <button 
                   onClick={() => setIsRecording(true)}
-                  className="w-full py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-medium transition-colors flex justify-center items-center gap-2 shadow-lg shadow-rose-600/20"
+                  className="cursor-pointer w-full py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-medium transition-colors flex justify-center items-center gap-2 shadow-lg shadow-rose-600/20"
                 >
                   <Video size={18} /> Start Camera & Test
                 </button>

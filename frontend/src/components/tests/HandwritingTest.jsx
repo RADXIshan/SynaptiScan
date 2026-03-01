@@ -95,7 +95,7 @@ export default function HandwritingTest() {
   return (
     <div className="max-w-4xl mx-auto animate-fade-in-up">
       <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors">
-        <ArrowLeft size={20} /> Back to Tests
+        <ArrowLeft size={20} /> Restart Assessment
       </Link>
       
       <div className="glass rounded-3xl p-8 relative overflow-hidden flex flex-col h-[700px] bg-white/60">
@@ -109,7 +109,7 @@ export default function HandwritingTest() {
               <p className="text-slate-600 text-sm mt-1">Trace an outward spiral starting from the center.</p>
             </div>
           </div>
-          <button onClick={clearCanvas} className="p-2 text-slate-500 hover:text-slate-800 bg-slate-100 rounded-lg transition-colors">
+          <button onClick={clearCanvas} className="cursor-pointer p-2 text-slate-500 hover:text-slate-800 bg-slate-100 rounded-lg transition-colors">
             <RotateCcw size={20} />
           </button>
         </header>

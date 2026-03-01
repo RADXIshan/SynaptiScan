@@ -18,7 +18,7 @@ export default function KeystrokeTest() {
       if (sessionId) {
         await ingestionApi.uploadKeystroke(sessionId, { text: finalText });
       }
-      navigate('/test-select');
+      navigate('/test/mouse');
     } catch (err) {
       console.error(err);
     } finally {
@@ -37,7 +37,7 @@ export default function KeystrokeTest() {
   return (
     <div className="max-w-3xl mx-auto animate-fade-in-up">
       <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-8 transition-colors">
-        <ArrowLeft size={20} /> Back to Tests
+        <ArrowLeft size={20} /> Restart Assessment
       </Link>
       
       <div className="glass rounded-3xl p-8 md:p-12 relative overflow-hidden bg-white/60">
@@ -79,9 +79,9 @@ export default function KeystrokeTest() {
               <button 
                 onClick={() => completeTest(text)}
                 disabled={text.length < 10}
-                className="text-emerald-600 font-medium flex items-center gap-2 hover:text-emerald-500 disabled:opacity-50"
+                className="cursor-pointer text-emerald-600 font-medium flex items-center gap-2 hover:text-emerald-500 disabled:opacity-50"
               >
-                Skip / Next <ArrowRight size={16} />
+                Next <ArrowRight size={16} />
               </button>
             </div>
           </div>
