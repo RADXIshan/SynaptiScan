@@ -70,6 +70,23 @@ async def update_user_me(
     db.refresh(current_user)
     return current_user
 
+@router.put("/password", status_code=status.HTTP_200_OK)
+async def update_password(
+    password_data: schemas.UserUpdatePassword,
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if not security.verify_password(password_data.old_password, current_user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Incorrect old password"
+        )
+    
+    current_user.hashed_password = security.get_password_hash(password_data.new_password)
+    db.add(current_user)
+    db.commit()
+    return {"message": "Password updated successfully"}
+
 @router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
 async def delete_user_me(
     current_user: models.User = Depends(get_current_user),

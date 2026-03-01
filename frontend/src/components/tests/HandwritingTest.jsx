@@ -1,7 +1,7 @@
 import React, { useRef, useState, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Edit3, ArrowLeft, CheckCircle, RotateCcw } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { ingestionApi } from '../../services/api';
 
 export default function HandwritingTest() {

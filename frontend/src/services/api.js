@@ -42,6 +42,14 @@ export const authApi = {
   logout: () => {
     localStorage.removeItem('token');
     localStorage.removeItem('sessionId');
+  },
+
+  updatePassword: async (old_password, new_password) => {
+    const response = await api.put('auth/password', {
+      old_password,
+      new_password
+    });
+    return response.data;
   }
 };
 

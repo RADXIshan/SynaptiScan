@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation } from 'react-router-dom';
+import { Outlet, Link, useLocation } from 'react-router';
 import { motion } from 'framer-motion';
 import { Activity, LogOut, User } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';

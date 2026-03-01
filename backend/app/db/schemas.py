@@ -13,6 +13,10 @@ class UserCreate(UserBase):
 class UserUpdate(BaseModel):
     data_consent: Optional[bool] = None
 
+class UserUpdatePassword(BaseModel):
+    old_password: str
+    new_password: str
+
 class UserRead(UserBase):
     id: int
     is_active: bool

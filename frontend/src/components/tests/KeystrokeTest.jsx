@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { motion } from 'framer-motion';
 import { Keyboard, ArrowLeft, CheckCircle, ArrowRight } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router';
 import { ingestionApi } from '../../services/api';
 
 export default function KeystrokeTest() {

@@ -4,7 +4,7 @@ import {
   Activity, ArrowRight, ShieldCheck, BrainCircuit, Scan, Mic, 
   Keyboard, MousePointer2, PenTool, CheckCircle2, ChevronDown 
 } from 'lucide-react';
-import { Link } from 'react-router-dom';
+import { Link } from 'react-router';
 import Accordion from '../components/ui/Accordion';
 
 export default function Landing() {
