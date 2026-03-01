@@ -172,51 +172,58 @@ export default function TremorTest() {
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Analyzing Movement...</h2>
           </div>
         ) : (
-          <div className="flex-1 bg-slate-900 rounded-2xl border border-slate-200 relative overflow-hidden flex flex-col items-center justify-center shadow-inner">
-            <video 
-              ref={videoRef} 
-              autoPlay 
-              playsInline 
-              muted 
-              className={`absolute inset-0 w-full h-full object-cover ${stream ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`} 
-            />
-            
-            {!stream && (
-               <div className="absolute inset-0 flex items-center justify-center opacity-20">
-                 <Camera size={120} className="text-slate-400" />
-               </div>
-            )}
-            
-            <div className="relative z-10 text-center p-8 bg-white/90 backdrop-blur-md rounded-2xl border border-slate-200 shadow-xl max-w-md">
-              <h3 className="text-slate-900 font-semibold mb-2">Camera Active</h3>
-              <p className="text-sm text-slate-600 mb-6 leading-relaxed">
-                Ensure both hands are visible in the frame, then start the 10-second recording.
-              </p>
-              
-              {!isRecording ? (
-                <button 
-                  onClick={startRecording}
-                  className="cursor-pointer w-full py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-medium transition-colors flex justify-center items-center gap-2 shadow-lg shadow-rose-600/20"
-                >
-                  <Video size={18} /> Start Recording
-                </button>
-              ) : (
-                <div>
-                  <div className="flex justify-between text-xs text-rose-600 font-bold mb-2 uppercase tracking-wider">
-                    <span className="flex items-center gap-2">
-                       <span className="w-3 h-3 rounded-full bg-rose-600 animate-pulse"></span>
-                       Recording Hands
-                    </span>
-                    <span>{10 - Math.floor(progress / 10)}s left</span>
-                  </div>
-                  <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
-                    <div 
-                      className="h-full bg-linear-to-r from-rose-500 to-pink-500 rounded-full transition-all ease-linear"
-                      style={{ width: `${progress}%` }}
-                    />
-                  </div>
+          <div className="flex flex-col gap-4 flex-1">
+            {/* Full-frame video — no overlay */}
+            <div className="flex-1 bg-slate-900 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-center shadow-inner min-h-0">
+              <video
+                ref={videoRef}
+                autoPlay
+                playsInline
+                muted
+                className={`absolute inset-0 w-full h-full object-cover ${stream ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}
+              />
+              {!stream && (
+                <div className="absolute inset-0 flex items-center justify-center opacity-20">
+                  <Camera size={120} className="text-slate-400" />
                 </div>
               )}
+            </div>
+
+            {/* Controls card — below the video */}
+            <div className="bg-white rounded-2xl border border-slate-200 shadow-sm p-5 flex flex-col sm:flex-row sm:items-center gap-4">
+              <div className="flex-1">
+                <h3 className="text-slate-900 font-semibold mb-1">Camera Active</h3>
+                <p className="text-sm text-slate-500 leading-relaxed">
+                  Ensure both hands are visible in the frame, then start the 10-second recording.
+                </p>
+              </div>
+
+              <div className="sm:w-56 shrink-0">
+                {!isRecording ? (
+                  <button
+                    onClick={startRecording}
+                    className="cursor-pointer w-full py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-medium transition-colors flex justify-center items-center gap-2 shadow-lg shadow-rose-600/20"
+                  >
+                    <Video size={18} /> Start Recording
+                  </button>
+                ) : (
+                  <div>
+                    <div className="flex justify-between text-xs text-rose-600 font-bold mb-2 uppercase tracking-wider">
+                      <span className="flex items-center gap-2">
+                        <span className="w-3 h-3 rounded-full bg-rose-600 animate-pulse" />
+                        Recording Hands
+                      </span>
+                      <span>{10 - Math.floor(progress / 10)}s left</span>
+                    </div>
+                    <div className="h-3 w-full bg-slate-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-full bg-linear-to-r from-rose-500 to-pink-500 rounded-full transition-all ease-linear"
+                        style={{ width: `${progress}%` }}
+                      />
+                    </div>
+                  </div>
+                )}
+              </div>
             </div>
           </div>
         )}

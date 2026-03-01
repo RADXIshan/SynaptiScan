@@ -11,7 +11,13 @@ router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 def get_dashboard_summary(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     latest_session = db.query(models.ScreeningSession).filter(
         models.ScreeningSession.user_id == current_user.id
-    ).order_by(models.ScreeningSession.created_at.desc()).first()
+    ).order_by(models.ScreeningSession.created_at.desc()).all()
+
+    # Skip sessions that have no results (abandoned/empty sessions)
+    latest_session = next(
+        (s for s in latest_session if s.results),
+        None
+    )
     
     if not latest_session:
         return {"has_data": False}

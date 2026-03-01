@@ -15,10 +15,11 @@ export default function KeystrokeTest() {
   const completeTest = async (finalText) => {
     setLoading(true);
     try {
-      const sessionId = localStorage.getItem('sessionId');
-      if (sessionId) {
-        await ingestionApi.uploadKeystroke(sessionId, { text: finalText });
-      }
+      // Create the session here — the first real submission — so that
+      // simply starting the test flow never creates an empty session.
+      const session = await ingestionApi.createSession();
+      const sessionId = session.id;
+      await ingestionApi.uploadKeystroke(sessionId, { text: finalText });
       navigate('/test/mouse');
     } catch (err) {
       console.error(err);

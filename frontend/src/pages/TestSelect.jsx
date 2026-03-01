@@ -1,24 +1,15 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { motion } from 'framer-motion';
 import { Activity, ArrowRight, ShieldCheck } from 'lucide-react';
-import { ingestionApi } from '../services/api';
 import { useNavigate } from 'react-router';
 
 export default function TestSelect() {
-  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
   const startAssessment = async () => {
-    setLoading(true);
-    try {
-      await ingestionApi.createSession();
-      // Sequentially, the first test is Keystroke
-      navigate('/test/keystroke');
-    } catch (err) {
-      console.error(err);
-      alert("Failed to create session. Please try again.");
-    }
-    setLoading(false);
+    // Session is created lazily when the first test submits data,
+    // so navigating away without completing a test never pollutes the dashboard.
+    navigate('/test/keystroke');
   };
 
   return (
@@ -46,13 +37,12 @@ export default function TestSelect() {
           <ShieldCheck size={16} /> Data is anonymized and securely processed
         </div>
 
-        <button 
+        <button
           onClick={startAssessment}
-          disabled={loading}
-          className="cursor-pointer group w-full sm:w-auto mx-auto bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70"
+          className="cursor-pointer group w-full sm:w-auto mx-auto bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 active:scale-95"
         >
-          {loading ? 'Initializing Session...' : 'Start Assessment'}
-          {!loading && <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />}
+          Start Assessment
+          <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
         </button>
       </motion.div>
     </div>
