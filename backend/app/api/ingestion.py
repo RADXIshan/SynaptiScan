@@ -1,0 +1,85 @@
+from fastapi import APIRouter, Depends, UploadFile, File, Form, HTTPException, status
+from sqlalchemy.orm import Session
+from ..db import models, schemas
+from ..db.database import get_db
+from .auth import get_current_user
+from typing import Optional
+import json
+import uuid
+import os
+
+router = APIRouter(prefix="/ingestion", tags=["ingestion"])
+
+UPLOAD_DIR = "/tmp/synaptiscan_uploads"
+os.makedirs(UPLOAD_DIR, exist_ok=True)
+
+@router.post("/sessions", response_model=schemas.ScreeningSessionRead)
+def create_session(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    db_session = models.ScreeningSession(user_id=current_user.id)
+    db.add(db_session)
+    db.commit()
+    db.refresh(db_session)
+    return db_session
+
+@router.post("/voice")
+async def upload_voice(
+    session_id: int = Form(...),
+    file: UploadFile = File(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    db_session = db.query(models.ScreeningSession).filter(
+        models.ScreeningSession.id == session_id,
+        models.ScreeningSession.user_id == current_user.id
+    ).first()
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    file_path = f"{UPLOAD_DIR}/{uuid.uuid4()}_{file.filename}"
+    with open(file_path, "wb") as buffer:
+        buffer.write(await file.read())
+        
+    # Placeholder for running ML Model
+    mock_score = 0.35 
+    
+    result = models.ModalityResult(
+        session_id=session_id,
+        modality_type="voice",
+        score=mock_score,
+        uncertainty=0.1,
+        raw_data_path=file_path
+    )
+    db.add(result)
+    db.commit()
+    db.refresh(result)
+    
+    return {"status": "success", "result_id": result.id, "mock_score": mock_score}
+
+@router.post("/keystroke")
+async def upload_keystroke(
+    session_id: int = Form(...),
+    payload: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    db_session = db.query(models.ScreeningSession).filter(
+        models.ScreeningSession.id == session_id,
+        models.ScreeningSession.user_id == current_user.id
+    ).first()
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+        
+    # Placeholder for running ML Model
+    mock_score = 0.22 
+    
+    result = models.ModalityResult(
+        session_id=session_id,
+        modality_type="keystroke",
+        score=mock_score,
+        uncertainty=0.05,
+    )
+    db.add(result)
+    db.commit()
+    db.refresh(result)
+    
+    return {"status": "success", "result_id": result.id, "mock_score": mock_score}

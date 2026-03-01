@@ -1,0 +1,104 @@
+import axios from 'axios';
+
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000/api/';
+
+const api = axios.create({
+  baseURL: API_URL,
+});
+
+api.interceptors.request.use((config) => {
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
+}, (error) => {
+  return Promise.reject(error);
+});
+
+export const authApi = {
+  login: async (email, password) => {
+    const formData = new URLSearchParams();
+    formData.append('username', email); // OAuth2 expects 'username'
+    formData.append('password', password);
+    const response = await api.post('auth/token', formData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    if (response.data.access_token) {
+      localStorage.setItem('token', response.data.access_token);
+    }
+    return response.data;
+  },
+  
+  register: async (email, password, data_consent = true) => {
+    const response = await api.post('auth/register', {
+      email,
+      password,
+      data_consent
+    });
+    return response.data;
+  },
+
+  logout: () => {
+    localStorage.removeItem('token');
+    localStorage.removeItem('sessionId');
+  }
+};
+
+export const dashboardApi = {
+  getSummary: async () => {
+    const response = await api.get('dashboard/summary');
+    return response.data;
+  }
+};
+
+export const ingestionApi = {
+  createSession: async () => {
+    const response = await api.post('ingestion/sessions');
+    if (response.data.id) {
+        localStorage.setItem('sessionId', response.data.id);
+    }
+    return response.data;
+  },
+
+  uploadVoice: async (sessionId, file) => {
+    const formData = new FormData();
+    formData.append('session_id', sessionId);
+    formData.append('file', file);
+    
+    const response = await api.post('ingestion/voice', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
+  },
+  
+  uploadKeystroke: async (sessionId, payload) => {
+    const formData = new URLSearchParams();
+    formData.append('session_id', sessionId);
+    formData.append('payload', JSON.stringify(payload));
+    
+    const response = await api.post('ingestion/keystroke', formData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    return response.data;
+  },
+  
+  // Stubs for future endpoints if not fully implemented in FastAPI yet
+  uploadMouse: async (sessionId, payload) => {
+    // Fallback stub until FastAPI has explicit mouse endpoint
+    console.log("Mock Mouse uploaded", payload);
+    return { status: "success", mock_score: 0.3 };
+  },
+  
+  uploadTremor: async (sessionId, payload) => {
+    console.log("Mock Tremor uploaded", payload);
+    return { status: "success", mock_score: 0.4 };
+  },
+  
+  uploadHandwriting: async (sessionId, payload) => {
+    console.log("Mock Handwriting uploaded", payload);
+    return { status: "success", mock_score: 0.25 };
+  }
+};
+
+export default api;
