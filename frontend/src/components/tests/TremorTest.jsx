@@ -106,7 +106,7 @@ export default function TremorTest() {
           <ArrowLeft size={20} /> Restart Assessment
         </Link>
         
-        <div className="glass rounded-3xl p-8 relative overflow-hidden flex flex-col h-[700px] sm:h-[600px] bg-white/60 items-center justify-center text-center">
+        <div className="glass rounded-3xl p-8 md:py-12 relative overflow-hidden flex flex-col min-h-[700px] sm:min-h-[600px] h-auto bg-white/60 items-center justify-center text-center">
           <div className="w-24 h-24 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-6 shadow-sm">
             <Video size={48} />
           </div>
@@ -153,7 +153,7 @@ export default function TremorTest() {
         <ArrowLeft size={20} /> Restart Assessment
       </Link>
       
-      <div className="glass rounded-3xl p-8 relative overflow-hidden flex flex-col h-[700px] sm:h-[600px] bg-white/60">
+      <div className="glass rounded-3xl p-8 relative overflow-hidden flex flex-col min-h-[700px] sm:min-h-[600px] bg-white/60">
         <header className="flex items-center justify-between mb-6 z-10">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-rose-100 text-rose-600 rounded-xl">

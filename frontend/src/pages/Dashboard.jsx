@@ -69,12 +69,19 @@ export default function Dashboard() {
 
   return (
     <div className="space-y-8 animate-fade-in-up">
-      <header className="mb-10">
-        <h1 className="text-4xl font-bold tracking-tight text-slate-900 mb-2">Motor Risk Dashboard</h1>
-        <p className="text-slate-600 text-lg">Your combined multi-modal screening analysis.</p>
-        <div className="mt-4 inline-flex items-center rounded-lg bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
-          Research & Screening Support Only
+      <header className="mb-10 flex flex-col md:flex-row md:items-start justify-between gap-4">
+        <div>
+          <h1 className="text-4xl font-bold tracking-tight text-slate-900 mb-2">Motor Risk Dashboard</h1>
+          <p className="text-slate-600 text-lg">Your combined multi-modal screening analysis.</p>
+          <div className="mt-4 inline-flex items-center rounded-lg bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
+            Research & Screening Support Only
+          </div>
         </div>
+        {!loading && data.has_data && (
+          <Link to="/test-select" className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-emerald-500/25 active:scale-95 group shrink-0">
+             <Activity size={18} className="group-hover:animate-pulse" /> Start New Assessment
+          </Link>
+        )}
       </header>
 
       {loading ? (
@@ -97,16 +104,16 @@ export default function Dashboard() {
               </Link>
             </div>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <motion.div 
               whileHover={{ y: -5 }}
-              className="glass rounded-3xl p-8 flex flex-col justify-between col-span-1 border-t-4 border-t-emerald-600 relative overflow-hidden"
+              className="glass rounded-3xl p-8 flex flex-col justify-center col-span-1 border-t-4 border-t-emerald-600 relative overflow-hidden h-96 lg:h-[400px]"
             >
               <div className="absolute top-0 right-0 p-32 bg-emerald-500/10 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none" />
-              <h2 className="text-slate-700 font-semibold mb-2 text-lg">Global PD-like Signal</h2>
-              <div className="flex items-baseline gap-2 mb-4">
-                <span className="text-7xl font-bold text-slate-900 tracking-tighter">{(data.latest_score * 100).toFixed(0)}</span>
-                <span className="text-xl text-slate-500">/ 100</span>
+              <h2 className="text-slate-700 font-semibold mb-4 text-xl">Global PD-like Signal</h2>
+              <div className="flex items-baseline gap-2 mb-6">
+                <span className="text-8xl font-bold text-slate-900 tracking-tighter">{(data.latest_score * 100).toFixed(0)}</span>
+                <span className="text-2xl text-slate-500">/ 100</span>
               </div>
               <div className="h-2 w-full bg-slate-200 rounded-full overflow-hidden mt-4">
                 <div 
@@ -114,18 +121,18 @@ export default function Dashboard() {
                   style={{ width: `${Math.min(data.latest_score * 100, 100)}%` }}
                 />
               </div>
-              <p className="text-slate-600 text-sm mt-4 leading-relaxed">
+              <p className="text-slate-600 text-base mt-6 leading-relaxed">
                 Overall risk pattern derived from your recent assessments.
               </p>
             </motion.div>
 
             <motion.div 
               whileHover={{ y: -5 }}
-              className="glass rounded-3xl p-6 col-span-1 md:col-span-2 flex flex-col"
+              className="glass rounded-3xl p-6 md:p-8 col-span-1 lg:col-span-2 flex flex-col min-w-0 min-h-0 overflow-hidden lg:h-[400px]"
             >
-              <h2 className="text-slate-700 font-semibold mb-6 text-lg">Motor Health Index (Trend)</h2>
-              <div className="w-full h-64 mt-4">
-                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
+              <h2 className="text-slate-700 font-semibold mb-6 text-xl">Motor Health Index (Trend)</h2>
+              <div className="w-full mt-4 flex-1 min-w-0 min-h-0">
+                <ResponsiveContainer width="100%" height="100%">
                   <AreaChart data={data.trend}>
                     <defs>
                       <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">
@@ -146,7 +153,6 @@ export default function Dashboard() {
             </motion.div>
           </div>
           )}
-
           <div className="space-y-4 pt-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-slate-900">Modality Breakdown</h2>
