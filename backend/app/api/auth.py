@@ -13,6 +13,28 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
 
+async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
+    from ..core.security import SECRET_KEY, ALGORITHM
+    import jwt
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail="Could not validate credentials",
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email: str = payload.get("sub")
+        if email is None:
+            raise credentials_exception
+        token_data = schemas.TokenData(email=email)
+    except jwt.InvalidTokenError:
+        raise credentials_exception
+    
+    user = get_user_by_email(db, email=token_data.email)
+    if user is None:
+        raise credentials_exception
+    return user
+
 @router.post("/register", response_model=schemas.UserRead)
 def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     db_user = get_user_by_email(db, email=user.email)
@@ -25,7 +47,6 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         hashed_password=hashed_password,
         data_consent=user.data_consent
     )
-    db.add(db_user)
     db.add(db_user)
     db.commit()
     db.refresh(db_user)
@@ -74,25 +95,3 @@ def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db:
         data={"sub": user.email}, expires_delta=access_token_expires
     )
     return {"access_token": access_token, "token_type": "bearer"}
-
-async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
-    from ..core.security import SECRET_KEY, ALGORITHM
-    import jwt
-    credentials_exception = HTTPException(
-        status_code=status.HTTP_401_UNAUTHORIZED,
-        detail="Could not validate credentials",
-        headers={"WWW-Authenticate": "Bearer"},
-    )
-    try:
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        email: str = payload.get("sub")
-        if email is None:
-            raise credentials_exception
-        token_data = schemas.TokenData(email=email)
-    except jwt.InvalidTokenError:
-        raise credentials_exception
-    
-    user = get_user_by_email(db, email=token_data.email)
-    if user is None:
-        raise credentials_exception
-    return user
