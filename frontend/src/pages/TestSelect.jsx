@@ -24,26 +24,26 @@ export default function TestSelect() {
 
   return (
     <div className="space-y-8 animate-fade-in-up flex flex-col items-center justify-center min-h-[70vh]">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full bg-indigo-600/10 blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full bg-indigo-200/50 blur-[150px] pointer-events-none" />
       
       <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="glass p-10 md:p-16 rounded-3xl text-center max-w-2xl relative z-10 border-t-4 border-indigo-500"
+        className="glass p-10 md:p-16 rounded-3xl text-center max-w-2xl relative z-10 border-t-4 border-indigo-600"
       >
-        <div className="mx-auto w-20 h-20 bg-indigo-500/20 text-indigo-400 rounded-full flex items-center justify-center mb-8 shadow-lg shadow-indigo-500/20">
+        <div className="mx-auto w-20 h-20 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-8 shadow-lg shadow-indigo-500/10">
           <Activity size={40} />
         </div>
         
-        <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 bg-clip-text text-transparent bg-linear-to-r from-indigo-400 to-cyan-400">
+        <h1 className="text-4xl md:text-5xl font-bold tracking-tight mb-6 text-slate-900">
           Digital Motor Assessment
         </h1>
         
-        <p className="text-slate-400 text-lg md:text-xl leading-relaxed mb-8">
+        <p className="text-slate-600 text-lg md:text-xl leading-relaxed mb-8">
           You will now complete 5 short activities assessing your micro-motor functions, typing rhythm, vocal patterns, and postural stability.
         </p>
 
-        <div className="flex items-center justify-center gap-2 text-sm text-emerald-400 font-medium mb-10 bg-emerald-500/10 py-2 px-4 rounded-full w-max mx-auto border border-emerald-500/20">
+        <div className="flex items-center justify-center gap-2 text-sm text-emerald-600 font-medium mb-10 bg-emerald-50 py-2 px-4 rounded-full w-max mx-auto border border-emerald-200">
           <ShieldCheck size={16} /> Data is anonymized and securely processed
         </div>
 

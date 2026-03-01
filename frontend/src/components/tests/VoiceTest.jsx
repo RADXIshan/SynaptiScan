@@ -54,26 +54,26 @@ export default function VoiceTest() {
 
   return (
     <div className="max-w-2xl mx-auto animate-fade-in-up">
-      <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-400 hover:text-white mb-8 transition-colors">
+      <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-8 transition-colors">
         <ArrowLeft size={20} /> Restart Assessment
       </Link>
       
-      <div className="glass rounded-3xl p-8 md:p-12 relative overflow-hidden text-center">
-        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-amber-500/10 rounded-full blur-[80px] pointer-events-none" />
+      <div className="glass rounded-3xl p-8 md:p-12 relative overflow-hidden text-center bg-white/60">
+        <div className="absolute -bottom-24 -left-24 w-64 h-64 bg-amber-200/40 rounded-full blur-[80px] pointer-events-none" />
         
-        <div className="w-20 h-20 mx-auto bg-amber-500/20 text-amber-400 rounded-full flex items-center justify-center mb-6 z-10 relative">
+        <div className="w-20 h-20 mx-auto bg-amber-100 text-amber-600 rounded-full flex items-center justify-center mb-6 z-10 relative">
           <Mic size={40} />
         </div>
         
-        <h1 className="text-3xl font-bold text-white mb-2 relative z-10">Voice Analysis</h1>
-        <p className="text-slate-400 mb-8 max-w-sm mx-auto relative z-10">
-          Take a deep breath and say <strong className="text-white">"Aaahh"</strong> at a steady pitch for 5 seconds.
+        <h1 className="text-3xl font-bold text-slate-900 mb-2 relative z-10">Voice Analysis</h1>
+        <p className="text-slate-600 mb-8 max-w-sm mx-auto relative z-10">
+          Take a deep breath and say <strong className="text-slate-900">"Aaahh"</strong> at a steady pitch for 5 seconds.
         </p>
 
         {loading ? (
           <div className="relative z-10">
             <div className="w-12 h-12 border-4 border-amber-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-            <h2 className="text-2xl font-bold text-white mb-8">Analyzing Audio...</h2>
+            <h2 className="text-2xl font-bold text-slate-900 mb-8">Analyzing Audio...</h2>
           </div>
         ) : (
           <div className="flex flex-col items-center relative z-10">
@@ -94,7 +94,7 @@ export default function VoiceTest() {
                 >
                   <Square size={24} fill="currentColor" />
                 </button>
-                <p className="text-rose-400 mt-4 font-medium animate-pulse">Recording...</p>
+                <p className="text-rose-600 mt-4 font-medium animate-pulse">Recording...</p>
               </motion.div>
             ) : (
               <button 
