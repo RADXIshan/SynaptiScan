@@ -25,7 +25,7 @@ export default function Login() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden animate-fade-in-up bg-slate-50">
-      <Link to="/" className="absolute top-6 left-6 flex items-center gap-2 text-xl font-bold text-slate-800 hover:opacity-80 transition-opacity z-20">
+      <Link to="/" className="absolute top-6 left-6 px-10 flex items-center gap-2 text-xl font-bold text-slate-800 hover:opacity-80 transition-opacity z-20">
         <img src="/logo.png" alt="SynaptiScan Logo" className="w-8 h-8" />
         SynaptiScan
       </Link>

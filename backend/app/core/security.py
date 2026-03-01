@@ -4,7 +4,7 @@ import bcrypt
 
 SECRET_KEY = os.getenv("SECRET_KEY", "super-secret-key-for-dev")
 ALGORITHM = "HS256"
-ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 7 # 1 week
+ACCESS_TOKEN_EXPIRE_MINUTES = 60 * 24 * 30 # 30 days
 
 def verify_password(plain_password, hashed_password):
     return bcrypt.checkpw(plain_password[:72].encode('utf-8'), hashed_password.encode('utf-8'))

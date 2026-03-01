@@ -44,12 +44,16 @@ export default function Dashboard() {
           { type: 'handwriting', icon: Edit3, score: null }
         ];
         
-        const mappedModality = response.modality_breakdown && response.modality_breakdown.length > 0 
-          ? response.modality_breakdown.map(m => ({
-              ...m,
-              icon: iconMap[m.type.toLowerCase()] || Activity
-            }))
-          : defaultModalities;
+        // Build a lookup from whatever the API returned, then fill all 5 slots.
+        const apiMap = Object.fromEntries(
+          (response.modality_breakdown || []).map(m => [m.type.toLowerCase(), m])
+        );
+        const mappedModality = defaultModalities.map(def => {
+          const apiResult = apiMap[def.type];
+          return apiResult
+            ? { ...apiResult, icon: iconMap[apiResult.type.toLowerCase()] || Activity }
+            : def;
+        });
         
         setData({
           has_data: response.has_data,

@@ -103,29 +103,33 @@ export const ingestionApi = {
   },
   
   uploadMouse: async (sessionId, payload) => {
-    console.log("Mock Mouse uploaded", payload);
-    return { status: "success", mock_score: 0.3 };
+    const formData = new URLSearchParams();
+    formData.append('session_id', sessionId);
+    formData.append('payload', JSON.stringify(payload));
+    const response = await api.post('ingestion/mouse', formData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    return response.data;
   },
   
   uploadTremor: async (sessionId, file) => {
     const formData = new FormData();
     formData.append('session_id', sessionId);
     formData.append('file', file);
-
-    try {
-      const response = await api.post('ingestion/tremor', formData, {
-        headers: { 'Content-Type': 'multipart/form-data' }
-      });
-      return response.data;
-    } catch (e) {
-      console.log("Mock uploaded Tremor Video", file?.size, "bytes");
-      return { status: "success", mock_score: 0.4 };
-    }
+    const response = await api.post('ingestion/tremor', formData, {
+      headers: { 'Content-Type': 'multipart/form-data' }
+    });
+    return response.data;
   },
   
   uploadHandwriting: async (sessionId, payload) => {
-    console.log("Mock Handwriting uploaded", payload);
-    return { status: "success", mock_score: 0.25 };
+    const formData = new URLSearchParams();
+    formData.append('session_id', sessionId);
+    formData.append('payload', JSON.stringify(payload));
+    const response = await api.post('ingestion/handwriting', formData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    return response.data;
   }
 };
 

@@ -32,9 +32,16 @@ def get_dashboard_summary(db: Session = Depends(get_db), current_user: models.Us
     
     trend = [{"date": s.created_at, "score": s.overall_risk_score} for s in reversed(recent_sessions)]
     
+    ALL_MODALITIES = ["keystroke", "mouse", "voice", "tremor", "handwriting"]
+    results_map = {r.modality_type: r.score for r in results}
+    modality_breakdown = [
+        {"type": m, "score": results_map.get(m, None)}
+        for m in ALL_MODALITIES
+    ]
+
     return {
         "has_data": True,
         "latest_score": latest_session.overall_risk_score,
-        "modality_breakdown": [{"type": r.modality_type, "score": r.score} for r in results],
+        "modality_breakdown": modality_breakdown,
         "trend": trend
     }

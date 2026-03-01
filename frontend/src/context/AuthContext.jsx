@@ -12,13 +12,29 @@ export const AuthProvider = ({ children }) => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Check if token exists on load
+    // Check if token exists and is not expired on load
     const token = localStorage.getItem('token');
     const email = localStorage.getItem('email');
     if (token) {
-      // In a real app we'd decode JWT or fetch /me endpoint here.
-      // For now we assume valid if token exists.
-      setUser({ authenticated: true, email });
+      try {
+        // Decode the JWT payload (base64url) without a library
+        const payloadBase64 = token.split('.')[1];
+        const payload = JSON.parse(atob(payloadBase64.replace(/-/g, '+').replace(/_/g, '/')));
+        const isExpired = payload.exp && payload.exp * 1000 < Date.now();
+        if (isExpired) {
+          // Token has expired — clear storage so user is prompted to log in again
+          localStorage.removeItem('token');
+          localStorage.removeItem('email');
+          localStorage.removeItem('sessionId');
+        } else {
+          setUser({ authenticated: true, email });
+        }
+      } catch {
+        // Malformed token — clear it
+        localStorage.removeItem('token');
+        localStorage.removeItem('email');
+        localStorage.removeItem('sessionId');
+      }
     }
     setLoading(false);
   }, []);
