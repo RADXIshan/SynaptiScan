@@ -12,6 +12,7 @@ import MouseTest from './components/tests/MouseTest';
 import VoiceTest from './components/tests/VoiceTest';
 import TremorTest from './components/tests/TremorTest';
 import HandwritingTest from './components/tests/HandwritingTest';
+import Profile from './pages/Profile';
 
 export default function App() {
   return (
@@ -30,6 +31,7 @@ export default function App() {
             <Route path="/test/voice" element={<VoiceTest />} />
             <Route path="/test/tremor" element={<TremorTest />} />
             <Route path="/test/handwriting" element={<HandwritingTest />} />
+            <Route path="/profile" element={<Profile />} />
           </Route>
           
           <Route path="*" element={<Navigate to="/" replace />} />

@@ -10,6 +10,9 @@ class UserCreate(UserBase):
     password: str
     data_consent: bool = True
 
+class UserUpdate(BaseModel):
+    data_consent: Optional[bool] = None
+
 class UserRead(UserBase):
     id: int
     is_active: bool

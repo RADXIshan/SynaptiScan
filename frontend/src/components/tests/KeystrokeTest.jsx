@@ -41,10 +41,10 @@ export default function KeystrokeTest() {
       </Link>
       
       <div className="glass rounded-3xl p-8 md:p-12 relative overflow-hidden bg-white/60">
-        <div className="absolute -top-24 -right-24 w-64 h-64 bg-indigo-300/30 rounded-full blur-[80px] pointer-events-none" />
+        <div className="absolute -top-24 -right-24 w-64 h-64 bg-emerald-300/30 rounded-full blur-[80px] pointer-events-none" />
         
         <header className="flex items-center gap-4 mb-8">
-          <div className="p-3 bg-indigo-100 text-indigo-600 rounded-xl">
+          <div className="p-3 bg-emerald-100 text-emerald-600 rounded-xl">
             <Keyboard size={32} />
           </div>
           <div>
@@ -55,7 +55,7 @@ export default function KeystrokeTest() {
 
         {loading ? (
           <div className="text-center py-12">
-            <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+            <div className="w-12 h-12 border-4 border-emerald-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Analyzing...</h2>
           </div>
         ) : (
@@ -65,7 +65,7 @@ export default function KeystrokeTest() {
             </div>
             
             <textarea
-              className="w-full h-48 bg-white border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-2xl p-6 text-slate-900 text-lg resize-none transition-all outline-none"
+              className="w-full h-48 bg-white border border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-2xl p-6 text-slate-900 text-lg resize-none transition-all outline-none"
               placeholder="Start typing here..."
               value={text}
               onChange={handleChange}
@@ -79,7 +79,7 @@ export default function KeystrokeTest() {
               <button 
                 onClick={() => completeTest(text)}
                 disabled={text.length < 10}
-                className="text-indigo-600 font-medium flex items-center gap-2 hover:text-indigo-500 disabled:opacity-50"
+                className="text-emerald-600 font-medium flex items-center gap-2 hover:text-emerald-500 disabled:opacity-50"
               >
                 Skip / Next <ArrowRight size={16} />
               </button>

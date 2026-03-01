@@ -29,7 +29,7 @@ export default function Login() {
         <img src="/logo.png" alt="SynaptiScan Logo" className="w-8 h-8" />
         SynaptiScan
       </Link>
-      <div className="absolute top-1/4 left-1/4 w-[40%] h-[40%] rounded-full bg-indigo-200/50 blur-[120px] pointer-events-none" />
+      <div className="absolute top-1/4 left-1/4 w-[40%] h-[40%] rounded-full bg-emerald-200/50 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 right-1/4 w-[40%] h-[40%] rounded-full bg-blue-200/50 blur-[120px] pointer-events-none" />
       
       <motion.div 
@@ -63,7 +63,7 @@ export default function Login() {
                 required
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full bg-white border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl py-3 pl-10 pr-4 text-slate-900 placeholder-slate-400 outline-none transition-all shadow-sm"
+                className="w-full bg-white border border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl py-3 pl-10 pr-4 text-slate-900 placeholder-slate-400 outline-none transition-all shadow-sm"
                 placeholder="you@example.com"
               />
             </div>
@@ -78,7 +78,7 @@ export default function Login() {
                 required
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full bg-white border border-slate-300 focus:border-indigo-500 focus:ring-1 focus:ring-indigo-500 rounded-xl py-3 pl-10 pr-12 text-slate-900 placeholder-slate-400 outline-none transition-all shadow-sm"
+                className="w-full bg-white border border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl py-3 pl-10 pr-12 text-slate-900 placeholder-slate-400 outline-none transition-all shadow-sm"
                 placeholder="••••••••"
               />
               <button
@@ -94,14 +94,14 @@ export default function Login() {
           <button 
             type="submit" 
             disabled={loading}
-            className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 rounded-xl transition-colors shadow-lg shadow-indigo-500/25 mt-2 disabled:opacity-50"
+            className="w-full bg-emerald-600 hover:bg-emerald-500 text-white font-medium py-3 rounded-xl transition-colors shadow-lg shadow-emerald-500/25 mt-2 disabled:opacity-50"
           >
             {loading ? 'Signing in...' : 'Sign In'}
           </button>
         </form>
 
         <p className="text-center text-slate-600 text-sm mt-8">
-          Don't have an account? <Link to="/signup" className="text-indigo-600 font-medium hover:underline">Sign up</Link>
+          Don't have an account? <Link to="/signup" className="text-emerald-600 font-medium hover:underline">Sign up</Link>
         </p>
       </motion.div>
     </div>

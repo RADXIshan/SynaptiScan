@@ -31,11 +31,11 @@ export default function Landing() {
     { icon: <Mic size={32} />, title: "Vocal Analysis", desc: "Detects micro-tremors and hesitations in voice recordings indicative of dysarthria.", color: "text-emerald-400" },
     { icon: <Scan size={32} />, title: "Postural Stability", desc: "Uses computer vision to map resting and active micro-tremors from device cameras.", color: "text-cyan-400" },
     { icon: <PenTool size={32} />, title: "Digital Handwriting", desc: "Evaluates spiral drawing algorithms for spatial memory and kinetic decline.", color: "text-pink-400" },
-    { icon: <BrainCircuit size={32} />, title: "Multi-Modal AI", desc: "Aggregates data points into a cohesive early warning score using advanced ML models.", color: "text-indigo-400" }
+    { icon: <BrainCircuit size={32} />, title: "Multi-Modal AI", desc: "Aggregates data points into a cohesive early warning score using advanced ML models.", color: "text-emerald-400" }
   ];
 
   return (
-    <div className="min-h-screen bg-slate-50 text-slate-600 overflow-x-hidden selection:bg-indigo-500/30">
+    <div className="min-h-screen bg-slate-50 text-slate-600 overflow-x-hidden selection:bg-emerald-500/30">
       
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
@@ -45,13 +45,13 @@ export default function Landing() {
             SynaptiScan
           </Link>
           <div className="hidden md:flex items-center gap-8 font-medium text-sm">
-            <a href="#features" className="relative transition-colors font-medium pb-1 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:origin-left before:scale-x-0 before:bg-indigo-600 before:transition-transform before:duration-300 hover:before:scale-x-100 text-slate-600 hover:text-indigo-600">Features</a>
-            <a href="#how-it-works" className="relative transition-colors font-medium pb-1 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:origin-left before:scale-x-0 before:bg-indigo-600 before:transition-transform before:duration-300 hover:before:scale-x-100 text-slate-600 hover:text-indigo-600">How it Works</a>
-            <a href="#faq" className="relative transition-colors font-medium pb-1 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:origin-left before:scale-x-0 before:bg-indigo-600 before:transition-transform before:duration-300 hover:before:scale-x-100 text-slate-600 hover:text-indigo-600">FAQ</a>
+            <a href="#features" className="relative transition-colors font-medium pb-1 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:origin-left before:scale-x-0 before:bg-emerald-600 before:transition-transform before:duration-300 hover:before:scale-x-100 text-slate-600 hover:text-emerald-600">Features</a>
+            <a href="#how-it-works" className="relative transition-colors font-medium pb-1 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:origin-left before:scale-x-0 before:bg-emerald-600 before:transition-transform before:duration-300 hover:before:scale-x-100 text-slate-600 hover:text-emerald-600">How it Works</a>
+            <a href="#faq" className="relative transition-colors font-medium pb-1 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:origin-left before:scale-x-0 before:bg-emerald-600 before:transition-transform before:duration-300 hover:before:scale-x-100 text-slate-600 hover:text-emerald-600">FAQ</a>
           </div>
           <div className="flex items-center gap-4">
-            <Link to="/login" className="hidden sm:block text-sm font-medium hover:text-indigo-600 transition-colors">Sign In</Link>
-            <Link to="/signup" className="text-sm font-medium bg-indigo-600 hover:bg-indigo-500 text-white px-5 py-2.5 rounded-full transition-all shadow-lg shadow-indigo-600/20">
+            <Link to="/login" className="hidden sm:block text-sm font-medium hover:text-emerald-600 transition-colors">Sign In</Link>
+            <Link to="/signup" className="text-sm font-medium bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-full transition-all shadow-lg shadow-emerald-600/20">
               Get Started
             </Link>
           </div>
@@ -60,7 +60,7 @@ export default function Landing() {
 
       {/* Hero Section */}
       <section className="relative pt-40 pb-32 flex flex-col items-center justify-center min-h-screen">
-        <div className="absolute top-1/4 left-1/4 w-[60%] h-[60%] rounded-full bg-indigo-600/10 blur-[150px] pointer-events-none" />
+        <div className="absolute top-1/4 left-1/4 w-[60%] h-[60%] rounded-full bg-emerald-600/10 blur-[150px] pointer-events-none" />
         <div className="absolute bottom-1/4 right-1/4 w-[50%] h-[50%] rounded-full bg-cyan-600/10 blur-[150px] pointer-events-none" />
         
         <motion.div 
@@ -75,7 +75,7 @@ export default function Landing() {
             className="text-6xl md:text-8xl font-extrabold tracking-tight mb-8 text-slate-900 leading-tight"
           >
             Detect Motor <br/>
-            <span className="bg-clip-text text-transparent bg-linear-to-r from-indigo-600 to-indigo-400">Patterns Early.</span>
+            <span className="bg-clip-text text-transparent bg-linear-to-r from-emerald-600 to-emerald-400">Patterns Early.</span>
           </motion.h1>
           
           <motion.p 
@@ -93,7 +93,7 @@ export default function Landing() {
             transition={{ duration: 0.6, delay: 0.3 }}
             className="flex flex-col sm:flex-row items-center justify-center gap-4"
           >
-            <Link to="/signup" className="group w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl shadow-indigo-600/30 transition-all flex items-center justify-center gap-3 active:scale-95">
+            <Link to="/signup" className="group w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 active:scale-95">
               Start Screening Now
               <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
             </Link>
@@ -136,7 +136,7 @@ export default function Landing() {
               <motion.div 
                 key={i} 
                 variants={itemVariants}
-                className="group bg-slate-50 p-8 rounded-3xl border border-slate-200 hover:border-indigo-300 transition-colors shadow-xs hover:shadow-md hover:shadow-indigo-500/5 cursor-default"
+                className="group bg-slate-50 p-8 rounded-3xl border border-slate-200 hover:border-emerald-300 transition-colors shadow-xs hover:shadow-md hover:shadow-emerald-500/5 cursor-default"
               >
                 <div className={`mb-6 p-4 rounded-2xl bg-white border border-slate-100 shadow-sm inline-block group-hover:scale-110 transition-transform ${feature.color}`}>
                   {feature.icon}
@@ -154,7 +154,7 @@ export default function Landing() {
         <div className="max-w-7xl mx-auto px-6">
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-center">
             <div>
-              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-slate-900 leading-tight">Screening without <br/><span className="text-indigo-600">the clinical anxiety.</span></h2>
+              <h2 className="text-4xl md:text-5xl font-bold mb-6 text-slate-900 leading-tight">Screening without <br/><span className="text-emerald-600">the clinical anxiety.</span></h2>
               <p className="text-lg text-slate-600 mb-10 leading-relaxed">
                 Take assessments from the comfort of your own home using the devices you already own. Our platform guides you through simple interactions.
               </p>
@@ -166,7 +166,7 @@ export default function Landing() {
                   { title: "Review Assessment Results", desc: "Get an easy-to-understand motor pathway index." }
                 ].map((step, i) => (
                   <div key={i} className="flex gap-4">
-                    <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-indigo-500/20 text-indigo-400 font-bold border border-indigo-500/30">
+                    <div className="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-emerald-500/20 text-emerald-400 font-bold border border-emerald-500/30">
                       {i + 1}
                     </div>
                     <div>
@@ -179,7 +179,7 @@ export default function Landing() {
             </div>
             
             <div className="relative">
-              <div className="absolute inset-0 bg-linear-to-tr from-indigo-500/20 to-cyan-500/20 rounded-3xl blur-[80px]" />
+              <div className="absolute inset-0 bg-linear-to-tr from-emerald-500/20 to-cyan-500/20 rounded-3xl blur-[80px]" />
               <div className="relative bg-white p-8 rounded-3xl border border-slate-200 shadow-xl">
                 <div className="flex items-center justify-between border-b border-slate-100 pb-4 mb-6">
                   <div className="flex items-center gap-2">
@@ -189,9 +189,9 @@ export default function Landing() {
                   <span className="text-xs text-slate-500 uppercase tracking-wider">End-to-End Encrypted</span>
                 </div>
                 <ul className="space-y-4 text-sm text-slate-600">
-                  <li className="flex items-start gap-3"><CheckCircle2 className="text-indigo-400 shrink-0 mt-0.5" size={18}/> <span>We only record metadata (speed, trajectory, variation), never the actual keystroke content or audio transcriptions.</span></li>
-                  <li className="flex items-start gap-3"><CheckCircle2 className="text-indigo-400 shrink-0 mt-0.5" size={18}/> <span>Video processing for tremors happens locally on your device where possible.</span></li>
-                  <li className="flex items-start gap-3"><CheckCircle2 className="text-indigo-400 shrink-0 mt-0.5" size={18}/> <span>Raw audio patterns are immediately converted into non-reversible frequency spectrograms.</span></li>
+                  <li className="flex items-start gap-3"><CheckCircle2 className="text-emerald-400 shrink-0 mt-0.5" size={18}/> <span>We only record metadata (speed, trajectory, variation), never the actual keystroke content or audio transcriptions.</span></li>
+                  <li className="flex items-start gap-3"><CheckCircle2 className="text-emerald-400 shrink-0 mt-0.5" size={18}/> <span>Video processing for tremors happens locally on your device where possible.</span></li>
+                  <li className="flex items-start gap-3"><CheckCircle2 className="text-emerald-400 shrink-0 mt-0.5" size={18}/> <span>Raw audio patterns are immediately converted into non-reversible frequency spectrograms.</span></li>
                 </ul>
               </div>
             </div>
@@ -226,13 +226,13 @@ export default function Landing() {
 
       {/* CTA Section */}
       <section className="py-32 relative overflow-hidden bg-slate-50">
-        <div className="absolute inset-0 bg-linear-to-b from-transparent to-indigo-50/50" />
+        <div className="absolute inset-0 bg-linear-to-b from-transparent to-emerald-50/50" />
         <div className="max-w-4xl mx-auto px-6 text-center relative z-10">
           <h2 className="text-4xl md:text-6xl font-bold mb-6 text-slate-900 leading-tight">Ready to begin your <br/>digital assessment?</h2>
           <p className="text-xl text-slate-600 mb-10 max-w-2xl mx-auto">
             Join our research platform today to start capturing your baseline motor metrics. Registration takes less than a minute.
           </p>
-          <Link to="/signup" className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-10 py-5 rounded-full font-bold text-xl shadow-2xl shadow-indigo-600/40 transition-all hover:-translate-y-1">
+          <Link to="/signup" className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-10 py-5 rounded-full font-bold text-xl shadow-2xl shadow-emerald-600/40 transition-all hover:-translate-y-1">
             Create Free Account <ArrowRight size={24} />
           </Link>
         </div>
@@ -242,7 +242,7 @@ export default function Landing() {
       <footer className="border-t border-slate-200 bg-white py-12">
         <div className="max-w-7xl mx-auto px-6 flex flex-col md:flex-row items-center justify-between gap-6">
           <div className="flex items-center gap-2 text-lg font-bold text-slate-800">
-            <img src="/logo.png" alt="SynaptiScan Logo" className="w-6 h-6 grayscale opacity-80" />
+            <img src="/logo.png" alt="SynaptiScan Logo" className="w-6 h-6" />
             SynaptiScan
           </div>
           <p className="text-slate-500 text-sm">

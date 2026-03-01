@@ -72,27 +72,27 @@ export default function Dashboard() {
       <header className="mb-10">
         <h1 className="text-4xl font-bold tracking-tight text-slate-900 mb-2">Motor Risk Dashboard</h1>
         <p className="text-slate-600 text-lg">Your combined multi-modal screening analysis.</p>
-        <div className="mt-4 inline-flex items-center rounded-lg bg-indigo-500/10 px-3 py-1 text-sm font-medium text-indigo-400 ring-1 ring-inset ring-indigo-500/20">
+        <div className="mt-4 inline-flex items-center rounded-lg bg-emerald-500/10 px-3 py-1 text-sm font-medium text-emerald-400 ring-1 ring-inset ring-emerald-500/20">
           Research & Screening Support Only
         </div>
       </header>
 
       {loading ? (
         <div className="flex items-center justify-center h-64 mt-12 glass rounded-3xl border border-slate-200">
-           <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} className="text-indigo-600">
+           <motion.div animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 1, ease: "linear" }} className="text-emerald-600">
              <Activity size={48} />
            </motion.div>
         </div>
       ) : (
         <>
           {!data.has_data ? (
-            <div className="text-center py-20 glass rounded-3xl mt-8 mb-8 border-t-4 border-t-indigo-600 shadow-xl">
-              <Activity className="mx-auto text-indigo-600 mb-6" size={64} />
+            <div className="text-center py-20 glass rounded-3xl mt-8 mb-8 border-t-4 border-t-emerald-600 shadow-xl">
+              <Activity className="mx-auto text-emerald-600 mb-6" size={64} />
               <h2 className="text-3xl font-bold text-slate-900 mb-4">Welcome to SynaptiScan</h2>
               <p className="text-slate-600 text-lg mb-8 max-w-2xl mx-auto">
                 It looks like you haven't taken any screening tests yet. Start by taking a multi-modal assessment to get your first Motor Health Index score.
               </p>
-              <Link to="/test-select" className="inline-flex items-center gap-2 bg-indigo-600 hover:bg-indigo-500 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-indigo-500/25">
+              <Link to="/test-select" className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl font-medium transition-colors shadow-lg shadow-emerald-500/25">
                 Take Your First Test <ArrowRight size={20} />
               </Link>
             </div>
@@ -100,9 +100,9 @@ export default function Dashboard() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <motion.div 
               whileHover={{ y: -5 }}
-              className="glass rounded-3xl p-8 flex flex-col justify-between col-span-1 border-t-4 border-t-indigo-600 relative overflow-hidden"
+              className="glass rounded-3xl p-8 flex flex-col justify-between col-span-1 border-t-4 border-t-emerald-600 relative overflow-hidden"
             >
-              <div className="absolute top-0 right-0 p-32 bg-indigo-500/10 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none" />
+              <div className="absolute top-0 right-0 p-32 bg-emerald-500/10 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none" />
               <h2 className="text-slate-700 font-semibold mb-2 text-lg">Global PD-like Signal</h2>
               <div className="flex items-baseline gap-2 mb-4">
                 <span className="text-7xl font-bold text-slate-900 tracking-tighter">{(data.latest_score * 100).toFixed(0)}</span>
@@ -150,7 +150,7 @@ export default function Dashboard() {
           <div className="space-y-4 pt-6">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-slate-900">Modality Breakdown</h2>
-              <Link to="/test-select" className="flex items-center gap-2 text-indigo-600 hover:text-indigo-500 transition text-sm font-semibold">
+              <Link to="/test-select" className="flex items-center gap-2 text-emerald-600 hover:text-emerald-500 transition text-sm font-semibold">
                 {data.has_data ? "Take a New Test" : "Take Your First Test"} <ArrowRight size={16} />
               </Link>
             </div>
@@ -162,9 +162,9 @@ export default function Dashboard() {
                   <motion.div
                     key={idx}
                     whileHover={{ scale: 1.02 }}
-                    className="glass p-5 rounded-2xl flex flex-col border border-slate-200 hover:border-indigo-300 transition-colors"
+                    className="glass p-5 rounded-2xl flex flex-col border border-slate-200 hover:border-emerald-300 transition-colors"
                   >
-                    <div className="flex items-center justify-between mb-4 text-indigo-600">
+                    <div className="flex items-center justify-between mb-4 text-emerald-600">
                       <IconComponent size={24} />
                       <span className="text-sm font-medium bg-slate-100 px-2 py-1 rounded-md text-slate-600">
                         {m.score !== null ? `${(m.score * 100).toFixed(0)}%` : 'N/A'}

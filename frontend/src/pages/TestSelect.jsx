@@ -24,14 +24,14 @@ export default function TestSelect() {
 
   return (
     <div className="space-y-8 animate-fade-in-up flex flex-col items-center justify-center min-h-[70vh]">
-      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full bg-indigo-200/50 blur-[150px] pointer-events-none" />
+      <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[80%] h-[80%] rounded-full bg-emerald-200/50 blur-[150px] pointer-events-none" />
       
       <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="glass p-10 md:p-16 rounded-3xl text-center max-w-2xl relative z-10 border-t-4 border-indigo-600"
+        className="glass p-10 md:p-16 rounded-3xl text-center max-w-2xl relative z-10 border-t-4 border-emerald-600"
       >
-        <div className="mx-auto w-20 h-20 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mb-8 shadow-lg shadow-indigo-500/10">
+        <div className="mx-auto w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-8 shadow-lg shadow-emerald-500/10">
           <Activity size={40} />
         </div>
         
@@ -50,7 +50,7 @@ export default function TestSelect() {
         <button 
           onClick={startAssessment}
           disabled={loading}
-          className="group w-full sm:w-auto bg-indigo-600 hover:bg-indigo-500 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-indigo-600/30 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70"
+          className="group w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-2xl font-bold text-lg shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 active:scale-95 disabled:opacity-70"
         >
           {loading ? 'Initializing Session...' : 'Start Assessment'}
           {!loading && <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />}

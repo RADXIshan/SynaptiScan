@@ -26,9 +26,39 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
         data_consent=user.data_consent
     )
     db.add(db_user)
+    db.add(db_user)
     db.commit()
     db.refresh(db_user)
     return db_user
+
+@router.get("/me", response_model=schemas.UserRead)
+async def read_users_me(current_user: models.User = Depends(get_current_user)):
+    return current_user
+
+@router.put("/me", response_model=schemas.UserRead)
+async def update_user_me(
+    user_update: schemas.UserUpdate, 
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    if user_update.data_consent is not None:
+        current_user.data_consent = user_update.data_consent
+    
+    db.add(current_user)
+    db.commit()
+    db.refresh(current_user)
+    return current_user
+
+@router.delete("/me", status_code=status.HTTP_204_NO_CONTENT)
+async def delete_user_me(
+    current_user: models.User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    # Depending on relationships, cascading delete might remove sessions automatically. 
+    # But explicitly:
+    db.delete(current_user)
+    db.commit()
+    return
 
 @router.post("/token", response_model=schemas.Token)
 def login_for_access_token(form_data: OAuth2PasswordRequestForm = Depends(), db: Session = Depends(get_db)):
