@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { User, Mail, Shield, AlertTriangle, Loader2, Lock, X, CheckCircle } from 'lucide-react';
 import { authApi } from '../services/api';
 
@@ -254,13 +254,21 @@ export default function Profile() {
       </div>
 
       {/* Password Edit Modal */}
-      {isEditingPassword && createPortal(
-        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md animate-fade-in-up">
-          <motion.div 
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative"
-          >
+      {createPortal(
+        <AnimatePresence>
+          {isEditingPassword && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md"
+            >
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative"
+              >
             <button 
               onClick={closePasswordModal}
               className="absolute top-6 right-6 text-slate-400 hover:text-slate-600 transition-colors"
@@ -341,19 +349,29 @@ export default function Profile() {
                 </button>
               </div>
             </form>
-          </motion.div>
-        </div>,
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
         document.body
       )}
 
       {/* Delete Account Modal */}
-      {showDeleteModal && createPortal(
-        <div className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md animate-fade-in-up">
-          <motion.div 
-            initial={{ scale: 0.95, opacity: 0 }}
-            animate={{ scale: 1, opacity: 1 }}
-            className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative"
-          >
+      {createPortal(
+        <AnimatePresence>
+          {showDeleteModal && (
+            <motion.div 
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="fixed inset-0 z-9999 flex items-center justify-center p-4 bg-slate-900/50 backdrop-blur-md"
+            >
+              <motion.div 
+                initial={{ scale: 0.95, opacity: 0, y: 20 }}
+                animate={{ scale: 1, opacity: 1, y: 0 }}
+                exit={{ scale: 0.95, opacity: 0, y: 20 }}
+                className="bg-white rounded-3xl p-8 max-w-md w-full shadow-2xl relative"
+              >
             <button 
               onClick={() => !deleting && setShowDeleteModal(false)}
               disabled={deleting}
@@ -388,9 +406,11 @@ export default function Profile() {
                 {deleting ? <Loader2 size={18} className="animate-spin" /> : null}
                 {deleting ? 'Deleting...' : 'Confirm Delete'}
               </button>
-            </div>
-          </motion.div>
-        </div>,
+                </div>
+              </motion.div>
+            </motion.div>
+          )}
+        </AnimatePresence>,
         document.body
       )}
     </div>
