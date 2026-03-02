@@ -4,6 +4,7 @@ from datetime import datetime
 
 # --- USER SCHEMAS ---
 class UserBase(BaseModel):
+    username: str
     email: EmailStr
 
 class UserCreate(UserBase):
@@ -11,6 +12,7 @@ class UserCreate(UserBase):
     data_consent: bool = True
 
 class UserUpdate(BaseModel):
+    username: Optional[str] = None
     data_consent: Optional[bool] = None
 
 class UserUpdatePassword(BaseModel):

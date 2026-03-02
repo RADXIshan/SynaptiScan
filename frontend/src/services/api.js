@@ -30,8 +30,9 @@ export const authApi = {
     return response.data;
   },
   
-  register: async (email, password, data_consent = true) => {
+  register: async (email, password, data_consent = true, username) => {
     const response = await api.post('auth/register', {
+      username,
       email,
       password,
       data_consent

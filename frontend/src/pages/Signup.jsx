@@ -1,10 +1,11 @@
 import React, { useState } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { Link } from 'react-router';
-import { Activity, Mail, Lock, ShieldCheck, Eye, EyeOff } from 'lucide-react';
+import { User, Mail, Lock, ShieldCheck, Eye, EyeOff } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 export default function Signup() {
+  const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [showPassword, setShowPassword] = useState(false);
@@ -21,7 +22,7 @@ export default function Signup() {
     }
     setError('');
     setLoading(true);
-    const result = await register(email, password, consent);
+    const result = await register(email, password, consent, username);
     if (!result.success) {
       setError(result.error);
     }
@@ -59,6 +60,22 @@ export default function Signup() {
         )}
 
         <form onSubmit={handleSubmit} className="space-y-5">
+          <div>
+            <label className="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Username</label>
+            <div className="relative">
+              <User className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400" size={18} />
+              <input 
+                type="text" 
+                required
+                value={username}
+                onChange={(e) => setUsername(e.target.value)}
+                className="w-full bg-white border border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-xl py-3 pl-10 pr-4 text-slate-900 placeholder-slate-400 outline-none transition-all shadow-sm"
+                placeholder="Choose a username"
+                minLength={3}
+              />
+            </div>
+          </div>
+
           <div>
             <label className="block text-sm font-medium text-slate-700 mb-1.5 ml-1">Email</label>
             <div className="relative">

@@ -13,6 +13,9 @@ oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/token")
 def get_user_by_email(db: Session, email: str):
     return db.query(models.User).filter(models.User.email == email).first()
 
+def get_user_by_username(db: Session, username: str):
+    return db.query(models.User).filter(models.User.username == username).first()
+
 async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     from ..core.security import SECRET_KEY, ALGORITHM
     import jwt
@@ -41,8 +44,13 @@ def register_user(user: schemas.UserCreate, db: Session = Depends(get_db)):
     if db_user:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Email already registered")
     
+    db_username = get_user_by_username(db, username=user.username)
+    if db_username:
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already taken")
+    
     hashed_password = security.get_password_hash(user.password)
     db_user = models.User(
+        username=user.username,
         email=user.email,
         hashed_password=hashed_password,
         data_consent=user.data_consent
@@ -62,6 +70,11 @@ async def update_user_me(
     current_user: models.User = Depends(get_current_user),
     db: Session = Depends(get_db)
 ):
+    if user_update.username is not None:
+        existing = get_user_by_username(db, username=user_update.username)
+        if existing and existing.id != current_user.id:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already taken")
+        current_user.username = user_update.username
     if user_update.data_consent is not None:
         current_user.data_consent = user_update.data_consent
     

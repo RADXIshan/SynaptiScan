@@ -25,18 +25,42 @@ export const AuthProvider = ({ children }) => {
           // Token has expired — clear storage so user is prompted to log in again
           localStorage.removeItem('token');
           localStorage.removeItem('email');
+          localStorage.removeItem('username');
           localStorage.removeItem('sessionId');
+          setLoading(false);
         } else {
-          setUser({ authenticated: true, email });
+          // Fetch /me to always get the latest username from the DB
+          fetch('http://localhost:8000/api/auth/me', {
+            headers: { 'Authorization': `Bearer ${token}` }
+          })
+            .then(res => res.ok ? res.json() : null)
+            .then(userData => {
+              if (userData) {
+                localStorage.setItem('username', userData.username || '');
+                localStorage.setItem('email', userData.email || email);
+                setUser({ authenticated: true, email: userData.email, username: userData.username });
+              } else {
+                // /me failed — use cached values
+                setUser({ authenticated: true, email, username: localStorage.getItem('username') });
+              }
+            })
+            .catch(() => {
+              setUser({ authenticated: true, email, username: localStorage.getItem('username') });
+            })
+            .finally(() => setLoading(false));
+          return; // setLoading(false) handled in the promise chain
         }
       } catch {
         // Malformed token — clear it
         localStorage.removeItem('token');
         localStorage.removeItem('email');
+        localStorage.removeItem('username');
         localStorage.removeItem('sessionId');
+        setLoading(false);
       }
+    } else {
+      setLoading(false);
     }
-    setLoading(false);
   }, []);
 
   const login = async (email, password) => {
@@ -44,7 +68,21 @@ export const AuthProvider = ({ children }) => {
       const response = await authApi.login(email, password);
       localStorage.setItem('token', response.access_token);
       localStorage.setItem('email', email);
-      setUser({ authenticated: true, email });
+      // Fetch user profile to get username after login
+      try {
+        const meRes = await fetch('http://localhost:8000/api/auth/me', {
+          headers: { 'Authorization': `Bearer ${response.access_token}` }
+        });
+        if (meRes.ok) {
+          const userData = await meRes.json();
+          localStorage.setItem('username', userData.username);
+          setUser({ authenticated: true, email, username: userData.username });
+        } else {
+          setUser({ authenticated: true, email });
+        }
+      } catch {
+        setUser({ authenticated: true, email });
+      }
       navigate('/dashboard');
       return { success: true };
     } catch (err) {
@@ -52,9 +90,9 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
-  const register = async (email, password, dataConsent) => {
+  const register = async (email, password, dataConsent, username) => {
     try {
-      await authApi.register(email, password, dataConsent);
+      await authApi.register(email, password, dataConsent, username);
       // Auto-login after register
       await login(email, password);
       return { success: true };
@@ -67,6 +105,7 @@ export const AuthProvider = ({ children }) => {
     localStorage.removeItem('token');
     localStorage.removeItem('sessionId');
     localStorage.removeItem('email');
+    localStorage.removeItem('username');
     setUser(null);
     navigate('/login');
   };
