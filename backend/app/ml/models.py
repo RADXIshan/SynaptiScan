@@ -2,6 +2,7 @@ import os
 import joblib
 import numpy as np
 import hashlib
+import pandas as pd
 
 SAVED_MODELS_DIR = os.path.join(os.path.dirname(__file__), 'saved_models')
 
@@ -29,14 +30,23 @@ def evaluate_voice(audio_path: str):
     if not model:
         return 0.5, 0.2
         
-    # We expect 22 features. If no file or librosa analysis, simulate healthy baseline
-    # features = _deterministic_hash(audio_path, 22, 100.0, 50.0) -> Removing random hash
-    # Healthy baseline from train_models.py
-    features = [180.0, 220.0, 120.0, 0.002, 0.00001, 0.001, 0.001, 0.003, 0.01, 0.1, 0.005, 0.01, 0.01, 0.015, 0.002, 25.0, 0.4, 0.6, -6.5, 0.2, 2.0, 0.1]
-    
-    # MDVP:Fo(Hz) domain matching
-    X_input = pd.DataFrame([features], columns=['MDVP:Fo(Hz)', 'MDVP:Fhi(Hz)', 'MDVP:Flo(Hz)', 'MDVP:Jitter(%)', 'MDVP:Jitter(Abs)', 'MDVP:RAP', 'MDVP:PPQ', 'Jitter:DDP', 'MDVP:Shimmer', 'MDVP:Shimmer(dB)', 'Shimmer:APQ3', 'Shimmer:APQ5', 'MDVP:APQ', 'Shimmer:DDA', 'NHR', 'HNR', 'RPDE', 'DFA', 'spread1', 'spread2', 'D2', 'PPE']) if 'pd' in globals() else np.array([features])
-    
+    # No real acoustic features available from this path — return neutral score
+    # Real feature extraction requires librosa on the actual audio file (done in the API route)
+    if audio_path is None or audio_path.startswith('dummy'):
+        return 0.5, 0.3
+
+    # If a feature dict/list was passed via audio_path kwarg workaround, handle it
+    features = audio_path if isinstance(audio_path, (list, np.ndarray)) else None
+    if features is None:
+        return 0.5, 0.3
+
+    feature_names = ['MDVP:Fo(Hz)', 'MDVP:Fhi(Hz)', 'MDVP:Flo(Hz)', 'MDVP:Jitter(%)',
+                     'MDVP:Jitter(Abs)', 'MDVP:RAP', 'MDVP:PPQ', 'Jitter:DDP',
+                     'MDVP:Shimmer', 'MDVP:Shimmer(dB)', 'Shimmer:APQ3', 'Shimmer:APQ5',
+                     'MDVP:APQ', 'Shimmer:DDA', 'NHR', 'HNR', 'RPDE', 'DFA',
+                     'spread1', 'spread2', 'D2', 'PPE']
+    X_input = pd.DataFrame([features], columns=feature_names)
+
     prob = model.predict_proba(X_input)[0][1]
     uncertainty = 1.0 - max(model.predict_proba(X_input)[0])
     return float(prob), float(uncertainty)
@@ -53,7 +63,9 @@ def evaluate_keystroke(payload: dict):
     flight_std = payload.get('std_flight_time', 30.0)
     error_rate = payload.get('error_rate', 0.01)
     
-    features = np.array([[dwell_mean, dwell_std, flight_mean, flight_std, error_rate]])
+    features = pd.DataFrame([[dwell_mean, dwell_std, flight_mean, flight_std, error_rate]],
+                            columns=['mean_dwell_time', 'std_dwell_time',
+                                     'mean_flight_time', 'std_flight_time', 'error_rate'])
     
     prob = model.predict_proba(features)[0][1]
     uncertainty = 1.0 - max(model.predict_proba(features)[0])
@@ -71,7 +83,9 @@ def evaluate_mouse(payload: dict):
     vel_jitter = payload.get('velocity_jitter', 50.0)
     dir_changes = payload.get('direction_changes', 5)
     
-    features = np.array([[path_len, mov_time, avg_vel, vel_jitter, dir_changes]])
+    features = pd.DataFrame([[path_len, mov_time, avg_vel, vel_jitter, dir_changes]],
+                            columns=['path_length', 'movement_time', 'average_velocity',
+                                     'velocity_jitter', 'direction_changes'])
     
     prob = model.predict_proba(features)[0][1]
     uncertainty = 1.0 - max(model.predict_proba(features)[0])
@@ -82,10 +96,18 @@ def evaluate_tremor(video_path: str):
     model = get_model('tremor')
     if not model:
         return 0.5, 0.2
-    # Simulate feature extraction from visual tracking targeting healthy baseline
-    # Healthy features from train_models.py (peak=9.0, amp=2.0, ent=0.8)
-    features = np.array([[9.0, 2.0, 0.8]])
-    
+    # No real video tracking features available — return neutral score
+    # Real feature extraction requires optical flow analysis on the actual video
+    if video_path is None or video_path.startswith('dummy'):
+        return 0.5, 0.3
+
+    # Accept pre-extracted features passed as a list [peak_freq, amplitude, entropy]
+    features = video_path if isinstance(video_path, (list, np.ndarray)) else None
+    if features is None:
+        return 0.5, 0.3
+
+    features = pd.DataFrame([features],
+                            columns=['peak_frequency_hz', 'amplitude_mean', 'spectral_entropy'])
     prob = model.predict_proba(features)[0][1]
     uncertainty = 1.0 - max(model.predict_proba(features)[0])
     return float(prob), float(max(0.05, uncertainty))
@@ -101,10 +123,12 @@ def evaluate_handwriting(payload: dict):
     deviation = payload.get('layout_deviation', 20.0)
     pressure_var = payload.get('pressure_variation', 3.0)
     
-    features = np.array([[velocity, air_time, deviation, pressure_var]])
+    features = pd.DataFrame([[velocity, air_time, deviation, pressure_var]],
+                            columns=['drawing_velocity', 'air_time',
+                                     'layout_deviation', 'pressure_variation'])
     
     prob = model.predict_proba(features)[0][1]
     uncertainty = 1.0 - max(model.predict_proba(features)[0])
     return float(prob), float(max(0.05, uncertainty))
 
-import pandas as pd
+
