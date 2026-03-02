@@ -167,7 +167,7 @@ export default function Profile() {
               <label className="block text-sm font-medium text-slate-500 mb-1">Username</label>
               <div className="flex items-center gap-3 bg-slate-50 p-4 rounded-xl border border-slate-200">
                 <User className="text-slate-400" size={20} />
-                <span className="text-slate-900 font-medium">@{user?.username}</span>
+                <span className="text-slate-900 font-medium">{user?.username}</span>
               </div>
             </div>
             <div>

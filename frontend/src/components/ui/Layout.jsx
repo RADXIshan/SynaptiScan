@@ -24,7 +24,7 @@ export default function Layout() {
             <Link to="/profile" className="hidden sm:flex items-center gap-2 text-slate-500 hover:text-emerald-600 transition-colors">
               <User size={16} />
               <span className="truncate max-w-[150px]">
-                {user.username ? `@${user.username}` : user.email}
+                {user.username ? `${user.username}` : user.email}
               </span>
             </Link>
           )}
