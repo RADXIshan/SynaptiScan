@@ -3,7 +3,7 @@ from sqlalchemy.orm import Session
 from ..db import models, schemas
 from ..db.database import get_db
 from .auth import get_current_user
-from ..ml.models import evaluate_mouse, evaluate_tremor, evaluate_handwriting
+from ..ml.models import evaluate_voice, evaluate_keystroke, evaluate_mouse, evaluate_tremor, evaluate_handwriting
 from typing import Optional
 import json
 import uuid
@@ -40,21 +40,20 @@ async def upload_voice(
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
         
-    # Placeholder for running ML Model
-    mock_score = 0.35 
+    score, uncertainty = evaluate_voice(file_path)
     
     result = models.ModalityResult(
         session_id=session_id,
         modality_type="voice",
-        score=mock_score,
-        uncertainty=0.1,
+        score=score,
+        uncertainty=uncertainty,
         raw_data_path=file_path
     )
     db.add(result)
     db.commit()
     db.refresh(result)
     
-    return {"status": "success", "result_id": result.id, "mock_score": mock_score}
+    return {"status": "success", "result_id": result.id, "score": score}
 
 @router.post("/keystroke")
 async def upload_keystroke(
@@ -70,20 +69,20 @@ async def upload_keystroke(
     if not db_session:
         raise HTTPException(status_code=404, detail="Session not found")
         
-    # Placeholder for running ML Model
-    mock_score = 0.22 
+    data = json.loads(payload)
+    score, uncertainty = evaluate_keystroke(data)
     
     result = models.ModalityResult(
         session_id=session_id,
         modality_type="keystroke",
-        score=mock_score,
-        uncertainty=0.05,
+        score=score,
+        uncertainty=uncertainty,
     )
     db.add(result)
     db.commit()
     db.refresh(result)
     
-    return {"status": "success", "result_id": result.id, "mock_score": mock_score}
+    return {"status": "success", "result_id": result.id, "score": score}
 
 @router.post("/mouse")
 async def upload_mouse(
