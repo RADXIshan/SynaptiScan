@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { MousePointer, ArrowLeft, CheckCircle, Play } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
@@ -9,6 +9,9 @@ export default function MouseTest() {
   const [targets, setTargets] = useState([]);
   const [score, setScore] = useState(0);
   const [loading, setLoading] = useState(false);
+  const [trajectory, setTrajectory] = useState([]);
+  const testStartTime = useRef(null);
+  const containerRef = useRef(null);
   const navigate = useNavigate();
   const TOTAL_TARGETS = 10;
   
@@ -19,6 +22,10 @@ export default function MouseTest() {
   }, [step]);
 
   const nextTarget = () => {
+    if (score === 0 && !testStartTime.current) {
+      testStartTime.current = Date.now();
+    }
+    
     if (score >= TOTAL_TARGETS - 1) {
       setScore(s => s + 1);
       completeTest();
@@ -42,11 +49,35 @@ export default function MouseTest() {
     }
   };
 
+  const handlePointerMove = (e) => {
+    if (step !== 'test') return;
+    
+    // Get coordinates relative to the testing container
+    const rect = containerRef.current?.getBoundingClientRect();
+    if (!rect) return;
+    
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    
+    setTrajectory(prev => [...prev, {
+      x,
+      y,
+      t: Date.now()
+    }]);
+  };
+
   const completeTest = async () => {
     setLoading(true);
     try {
       const sessionId = localStorage.getItem('sessionId');
-      await ingestionApi.uploadMouse(sessionId, { score_time: Date.now() });
+      const duration = testStartTime.current ? (Date.now() - testStartTime.current) : 0;
+      
+      await ingestionApi.uploadMouse(sessionId, { 
+        duration_ms: duration,
+        trajectory: trajectory,
+        container_width: containerRef.current?.getBoundingClientRect().width || 800,
+        container_height: containerRef.current?.getBoundingClientRect().height || 600
+      });
       navigate('/test/voice');
     } catch (err) {
       console.error(err);
@@ -132,7 +163,11 @@ export default function MouseTest() {
             <h2 className="text-2xl font-bold text-slate-900 mb-2">Analyzing...</h2>
           </div>
         ) : (
-          <div className="flex-1 bg-slate-50/50 rounded-2xl border border-slate-200 relative overflow-hidden cursor-crosshair">
+          <div 
+            ref={containerRef}
+            onPointerMove={handlePointerMove}
+            className="flex-1 bg-slate-50/50 rounded-2xl border border-slate-200 relative overflow-hidden cursor-crosshair touch-none"
+          >
             {targets.map(t => (
               <motion.button
                 key={t.id}

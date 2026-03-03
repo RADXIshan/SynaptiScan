@@ -36,11 +36,16 @@ async def upload_voice(
     if not db_session:
         raise HTTPException(status_code=404, detail="Session not found")
         
-    file_path = f"{UPLOAD_DIR}/{uuid.uuid4()}_{file.filename}"
+    file_path = f"{UPLOAD_DIR}/{uuid.uuid4()}_voice.webm"
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
         
-    score, uncertainty = evaluate_voice(file_path)
+    from ..ml.features import extract_voice_features
+    features_list = extract_voice_features(file_path)
+    
+    # evaluate_voice accepts either a path or a 22-len array
+    eval_input = features_list if (features_list and len(features_list) == 22) else file_path
+    score, uncertainty = evaluate_voice(eval_input)
     
     result = models.ModalityResult(
         session_id=session_id,
@@ -70,6 +75,14 @@ async def upload_keystroke(
         raise HTTPException(status_code=404, detail="Session not found")
         
     data = json.loads(payload)
+    
+    # Extract features if raw keystrokes are provided
+    raw_strokes = data.get('keystrokes', [])
+    if raw_strokes and isinstance(raw_strokes, list):
+        from ..ml.features import extract_keystroke_features
+        key_features = extract_keystroke_features(raw_strokes)
+        data.update(key_features)
+        
     score, uncertainty = evaluate_keystroke(data)
     
     result = models.ModalityResult(
@@ -99,6 +112,13 @@ async def upload_mouse(
         raise HTTPException(status_code=404, detail="Session not found")
 
     data = json.loads(payload)
+    
+    raw_trajectory = data.get('trajectory', [])
+    if raw_trajectory and isinstance(raw_trajectory, list):
+        from ..ml.features import extract_mouse_features
+        mouse_features = extract_mouse_features(raw_trajectory)
+        data.update(mouse_features)
+        
     score, uncertainty = evaluate_mouse(data)
 
     result = models.ModalityResult(
@@ -127,11 +147,15 @@ async def upload_tremor(
     if not db_session:
         raise HTTPException(status_code=404, detail="Session not found")
 
-    file_path = f"{UPLOAD_DIR}/{uuid.uuid4()}_{file.filename}"
+    file_path = f"{UPLOAD_DIR}/{uuid.uuid4()}_tremor.webm"
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
 
-    score, uncertainty = evaluate_tremor(file_path)
+    from ..ml.features import extract_tremor_features
+    features_list = extract_tremor_features(file_path)
+    
+    eval_input = features_list if (features_list and len(features_list) == 8) else file_path
+    score, uncertainty = evaluate_tremor(eval_input)
 
     result = models.ModalityResult(
         session_id=session_id,
@@ -161,6 +185,15 @@ async def upload_handwriting(
         raise HTTPException(status_code=404, detail="Session not found")
 
     data = json.loads(payload)
+    
+    # Extract features if raw strokes are provided
+    strokes = data.get('strokes', [])
+    if strokes and isinstance(strokes, list):
+        from ..ml.features import extract_handwriting_features
+        kinematic_features = extract_handwriting_features(strokes)
+        # Merge derived features into data payload for the model
+        data.update(kinematic_features)
+
     score, uncertainty = evaluate_handwriting(data)
 
     result = models.ModalityResult(

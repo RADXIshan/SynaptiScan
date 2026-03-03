@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { Keyboard, ArrowLeft, CheckCircle, ArrowRight, Play } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
@@ -10,16 +10,19 @@ export default function KeystrokeTest() {
   const [targetText] = useState("The quick brown fox jumps over the lazy dog. A journey of a thousand miles begins with a single step.");
   const [isDone, setIsDone] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [keystrokes, setKeystrokes] = useState([]);
+  const activeKeys = useRef({});
   const navigate = useNavigate();
   
-  const completeTest = async (finalText) => {
+  const completeTest = async (finalText, recordedStrokes) => {
     setLoading(true);
     try {
-      // Create the session here — the first real submission — so that
-      // simply starting the test flow never creates an empty session.
       const session = await ingestionApi.createSession();
       const sessionId = session.id;
-      await ingestionApi.uploadKeystroke(sessionId, { text: finalText });
+      await ingestionApi.uploadKeystroke(sessionId, { 
+        text: finalText,
+        keystrokes: recordedStrokes
+      });
       navigate('/test/mouse');
     } catch (err) {
       console.error(err);
@@ -27,6 +30,43 @@ export default function KeystrokeTest() {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (step !== 'test') return;
+
+    const handleKeyDown = (e) => {
+      // Ignore modifier keys alone
+      if (['Shift', 'Control', 'Alt', 'Meta', 'CapsLock'].includes(e.key)) return;
+      
+      const keyId = e.code + e.key;
+      // Prevent repeated keydown triggers from holding a key
+      if (!activeKeys.current[keyId]) {
+        activeKeys.current[keyId] = Date.now();
+      }
+    };
+
+    const handleKeyUp = (e) => {
+      const keyId = e.code + e.key;
+      const downTime = activeKeys.current[keyId];
+      if (downTime) {
+        const upTime = Date.now();
+        setKeystrokes(prev => [...prev, {
+          key: e.key,
+          down: downTime,
+          up: upTime
+        }]);
+        delete activeKeys.current[keyId];
+      }
+    };
+
+    window.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('keyup', handleKeyUp);
+
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown);
+      window.removeEventListener('keyup', handleKeyUp);
+    };
+  }, [step]);
 
   const handleChange = (e) => {
     setText(e.target.value);
@@ -129,7 +169,7 @@ export default function KeystrokeTest() {
                 Progress: {Math.min(100, (text.length / targetText.length) * 100).toFixed(0)}%
               </span>
               <button 
-                onClick={() => completeTest(text)}
+                onClick={() => completeTest(text, keystrokes)}
                 disabled={text.length < 10}
                 className="cursor-pointer text-emerald-600 font-medium flex items-center gap-2 hover:text-emerald-500 disabled:opacity-50 transition-opacity"
               >

@@ -9,7 +9,9 @@ export default function HandwritingTest() {
   const canvasRef = useRef(null);
   const [isDrawing, setIsDrawing] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [pointsCount, setPointsCount] = useState(0);
+  const [strokes, setStrokes] = useState([]);
+  const [currentStroke, setCurrentStroke] = useState([]);
+  const [testStartTime, setTestStartTime] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -36,6 +38,9 @@ export default function HandwritingTest() {
     ctx.beginPath();
     ctx.moveTo(offsetX, offsetY);
     setIsDrawing(true);
+    
+    if (!testStartTime) setTestStartTime(Date.now());
+    setCurrentStroke([{ x: offsetX, y: offsetY, t: Date.now() }]);
   };
 
   const draw = (e) => {
@@ -44,7 +49,8 @@ export default function HandwritingTest() {
     const ctx = canvasRef.current.getContext('2d');
     ctx.lineTo(offsetX, offsetY);
     ctx.stroke();
-    setPointsCount(p => p + 1);
+    
+    setCurrentStroke(prev => [...prev, { x: offsetX, y: offsetY, t: Date.now() }]);
   };
 
   const stopDrawing = () => {
@@ -53,8 +59,15 @@ export default function HandwritingTest() {
     ctx.closePath();
     setIsDrawing(false);
     
-    // Auto-complete if enough strokes are logged
-    if (pointsCount > 50) {
+    if (currentStroke.length > 0) {
+      setStrokes(prev => [...prev, currentStroke]);
+      setCurrentStroke([]);
+    }
+  };
+
+  const handleFinishEarly = () => {
+    if (strokes.length > 0 || currentStroke.length > 0) {
+      if (isDrawing) stopDrawing();
       completeTest();
     }
   };
@@ -63,7 +76,16 @@ export default function HandwritingTest() {
     setLoading(true);
     try {
       const sessionId = localStorage.getItem('sessionId');
-      await ingestionApi.uploadHandwriting(sessionId, { strokes: pointsCount });
+      // Ensure the final stroke is included if just lifted
+      const finalStrokes = currentStroke.length > 0 ? [...strokes, currentStroke] : strokes;
+      const testDurationMs = testStartTime ? (Date.now() - testStartTime) : 0;
+      
+      await ingestionApi.uploadHandwriting(sessionId, { 
+        strokes: finalStrokes,
+        test_duration_ms: testDurationMs,
+        canvas_width: canvasRef.current.width,
+        canvas_height: canvasRef.current.height
+      });
       navigate('/dashboard');
     } catch (err) {
       console.error(err);
@@ -77,7 +99,9 @@ export default function HandwritingTest() {
     if (canvas) {
       const ctx = canvas.getContext('2d');
       ctx.clearRect(0, 0, canvas.width, canvas.height);
-      setPointsCount(0);
+      setStrokes([]);
+      setCurrentStroke([]);
+      setTestStartTime(null);
     }
   };
 
@@ -160,9 +184,18 @@ export default function HandwritingTest() {
               <p className="text-slate-600 text-sm mt-1">Trace an outward spiral starting from the center.</p>
             </div>
           </div>
-          <button onClick={clearCanvas} className="cursor-pointer p-2 text-slate-500 hover:text-slate-800 bg-slate-100 rounded-lg transition-colors" title="Clear Canvas">
-            <RotateCcw size={20} />
-          </button>
+          <div className="flex items-center gap-3">
+            <button onClick={clearCanvas} className="cursor-pointer p-2 text-slate-500 hover:text-slate-800 bg-slate-100 rounded-lg transition-colors" title="Clear Canvas">
+              <RotateCcw size={20} />
+            </button>
+            <button 
+              onClick={handleFinishEarly}
+              disabled={strokes.length === 0 && currentStroke.length === 0}
+              className="cursor-pointer px-5 py-2 bg-violet-600 text-white rounded-lg font-medium hover:bg-violet-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+            >
+              Submit Drawing
+            </button>
+          </div>
         </header>
 
         {loading ? (
