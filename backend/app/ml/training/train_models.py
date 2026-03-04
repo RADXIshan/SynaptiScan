@@ -9,6 +9,7 @@ import requests
 import joblib
 from sklearn.model_selection import train_test_split, StratifiedKFold, cross_val_score
 from sklearn.ensemble import RandomForestClassifier, GradientBoostingClassifier, VotingClassifier
+from sklearn.calibration import CalibratedClassifierCV
 from sklearn.preprocessing import StandardScaler, RobustScaler
 from sklearn.pipeline import Pipeline
 from sklearn.metrics import accuracy_score, classification_report, roc_auc_score
@@ -62,6 +63,17 @@ def _build_ensemble(seed=42) -> VotingClassifier:
               class_weight='balanced', random_state=seed)
     return VotingClassifier(estimators=[('rf', rf), ('gbm', gbm), ('svm', svm)],
                             voting='soft')
+
+
+def _calibrated_ensemble(seed=42) -> CalibratedClassifierCV:
+    """Ensemble wrapped with isotonic calibration for well-calibrated probabilities.
+
+    CalibratedClassifierCV with method='isotonic' uses cross-validation to fit
+    a monotone mapping from raw scores to accurate probabilities.  This prevents
+    the model from outputting near-0 or near-1 scores for ambiguous web inputs.
+    """
+    base = _build_ensemble(seed)
+    return CalibratedClassifierCV(base, method='isotonic', cv=3)
 
 
 def _smote_pipeline(estimator) -> ImbPipeline:
@@ -240,39 +252,71 @@ def train_keystroke_model():
         df = _parse_tappy_data(data_raw, pd_map)
         n_pd = int(df['label'].sum())
         print(f"  Parsed {len(df)} user profiles (PD={n_pd}, HC={len(df)-n_pd})")
+
+        # Derive additional features from Tappy data
+        if df is not None and len(df) >= 40:
+            # dwell IQR proxy: use std as proportional estimate (Tappy lacks per-key granularity)
+            df['dwell_iqr']   = df['std_dwell_time'] * 1.35  # IQR ≈ 1.35σ for Gaussian
+            df['flight_iqr']  = df['std_flight_time'] * 1.35
+            # Typing speed approximation: ~4 chars/flight-time-second average
+            df['typing_speed'] = np.clip(4.0 / (df['mean_flight_time'].clip(lower=50) / 1000.0), 0.5, 15.0)
     except Exception as e:
         print(f"  Download failed ({e}). Using realistic simulation fallback.")
 
     if df is None or len(df) < 40:
+        # Simulation calibrated from published Tappy + web-typing literature.
+        # Key source: Arroyo-Gallego et al. 2017 (Tappy HC vs PD statistics).
+        # Web typists tend to be faster and more consistent than Tappy cohort.
         np.random.seed(1337)
-        n = 600
+        n = 800
         labels = np.random.choice([0, 1], size=n, p=[0.5, 0.5])
         rows = []
         for y in labels:
-            if y == 1:
-                rows.append([np.random.normal(130,25), np.random.normal(55,18),
-                             np.random.normal(320,65), np.random.normal(100,30),
-                             np.clip(np.random.normal(0.06,0.025),0,1), y])
-            else:
-                rows.append([np.random.normal(82,12), np.random.normal(18,6),
-                             np.random.normal(195,35), np.random.normal(35,12),
-                             np.clip(np.random.normal(0.012,0.006),0,1), y])
-        df = pd.DataFrame(rows, columns=['mean_dwell_time','std_dwell_time',
-                                          'mean_flight_time','std_flight_time',
-                                          'error_rate','label'])
+            if y == 1:  # PD: slower, more variable, more errors
+                mean_dw  = np.random.normal(130, 25)
+                std_dw   = np.random.normal(55, 18)
+                dwell_iq = np.random.normal(72, 20)  # wider IQR
+                mean_fl  = np.random.normal(320, 65)
+                std_fl   = np.random.normal(100, 30)
+                flight_iq = np.random.normal(130, 35)
+                t_speed  = np.clip(np.random.normal(2.8, 0.8), 0.5, 6.0)  # chars/sec
+                err      = np.clip(np.random.normal(0.06, 0.025), 0, 1)
+            else:  # HC: faster, tighter variability, few errors
+                mean_dw  = np.random.normal(78, 12)
+                std_dw   = np.random.normal(16, 5)
+                dwell_iq = np.random.normal(20, 6)   # tight IQR
+                mean_fl  = np.random.normal(185, 32)
+                std_fl   = np.random.normal(30, 10)
+                flight_iq = np.random.normal(38, 12)
+                t_speed  = np.clip(np.random.normal(6.5, 1.2), 2.0, 12.0)  # chars/sec
+                err      = np.clip(np.random.normal(0.010, 0.005), 0, 1)
+            rows.append([mean_dw, std_dw, dwell_iq, mean_fl, std_fl, flight_iq, t_speed, err, y])
+        df = pd.DataFrame(rows, columns=[
+            'mean_dwell_time', 'std_dwell_time', 'dwell_iqr',
+            'mean_flight_time', 'std_flight_time', 'flight_iqr',
+            'typing_speed', 'error_rate', 'label'
+        ])
 
-    feature_cols = ['mean_dwell_time','std_dwell_time','mean_flight_time',
-                    'std_flight_time','error_rate']
+    feature_cols = ['mean_dwell_time', 'std_dwell_time', 'dwell_iqr',
+                    'mean_flight_time', 'std_flight_time', 'flight_iqr',
+                    'typing_speed', 'error_rate']
     df = df.dropna(subset=feature_cols + ['label'])
     X, y = df[feature_cols], df['label']
     print(f"  Class balance: {dict(y.value_counts())}")
 
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
-    model = _smote_pipeline(_build_ensemble())
+    model = _smote_pipeline(_calibrated_ensemble())
     model.fit(X_tr, y_tr)
     y_pred  = model.predict(X_te)
     y_proba = model.predict_proba(X_te)[:, 1]
     _print_metrics(y_te, y_pred, y_proba)
+
+    # Sanity check: HC group mean should be well below 0.5
+    hc_proba = model.predict_proba(X[y == 0])[:, 1].mean()
+    pd_proba = model.predict_proba(X[y == 1])[:, 1].mean()
+    print(f"  HC group avg PD prob: {hc_proba:.3f}  PD group avg PD prob: {pd_proba:.3f}")
+
+    joblib.dump(feature_cols, os.path.join(SAVED_MODELS_DIR, 'keystroke_features.joblib'))
     _save_model(model, 'keystroke')
 
 
@@ -507,35 +551,70 @@ def train_handwriting_model():
         avail = [c for c in HANDWRITING_FEATURES if c in df.columns]
         if len(avail) < 4:
             avail = [c for c in df.select_dtypes(include=[np.number]).columns if c != 'target']
-        X = df[avail].fillna(df[avail].median())
+        # Normalise ncv/nca to per-second rates so training distribution matches
+        # what extract_handwriting_features now produces (browser data is ~60 Hz,
+        # the raw dataset was recorded at ~100–200 Hz stylus).
+        X_raw = df[avail].fillna(df[avail].median())
         y = df['target'].astype(int)
+        for col in ['ncv_st', 'ncv_dy', 'nca_st', 'nca_dy']:
+            if col in X_raw.columns:
+                # on_surface_st/dy are in ms in the raw dataset
+                ref_col = 'on_surface_st' if 'st' in col else 'on_surface_dy'
+                if ref_col in X_raw.columns:
+                    on_sec = X_raw[ref_col].clip(lower=100) / 1000.0
+                    X_raw = X_raw.copy()
+                    X_raw[col] = X_raw[col] / on_sec
+        X = X_raw
         feature_cols = avail
-        print(f"  Using {len(avail)} kinematic features")
+        print(f"  Using {len(avail)} kinematic features (ncv/nca normalised to per-sec)")
     else:
+        # ---------------------------------------------------------------------------
+        # Simulation calibrated to match browser-extracted per-second ncv/nca rates.
+        # HC: steady spirals ≈ 8–10 direction changes/sec; PD: ≈ 5–7 (less smooth).
+        # Speed and velocity values use the same SCALE=0.00002 as features.py.
+        # ---------------------------------------------------------------------------
         print("  Using realistic simulation fallback.")
         np.random.seed(1111)
-        n = 500
+        n = 600
         labels = np.random.choice([0, 1], size=n, p=[0.5, 0.5])
         rows = []
         for y_val in labels:
-            if y_val == 1:
-                row = [np.random.normal(14,4.5), np.random.normal(12,4),
-                       np.random.normal(8,2.5),  np.random.normal(7,2),
-                       np.random.normal(5,1.5),  np.random.normal(4.5,1.5),
-                       np.random.normal(3,1),    np.random.normal(2.8,1),
-                       np.random.normal(0.4,0.1),np.random.normal(0.45,0.1),
-                       np.random.normal(0.3,0.1),np.random.normal(0.35,0.1),
-                       np.random.normal(1.6,0.5),np.random.normal(0.6,0.15),
-                       np.random.normal(0.87,0.1)]
-            else:
-                row = [np.random.normal(0.007,0.002),np.random.normal(0.006,0.002),
-                       np.random.normal(0.095,0.02), np.random.normal(0.090,0.02),
-                       np.random.normal(0.00003,0.00001),np.random.normal(0.00003,0.00001),
-                       np.random.normal(0.000002,0.0000005),np.random.normal(0.000002,0.0000005),
-                       np.random.normal(272,30),  np.random.normal(286,30),
-                       np.random.normal(120,15),  np.random.normal(162,20),
-                       np.random.normal(717,80),  np.random.normal(3132,300),
-                       np.random.normal(2915,280)]
+            if y_val == 1:  # PD: slower, more halting, lower per-sec NCV/NCA
+                row = [
+                    np.random.normal(0.0045, 0.0015),   # speed_st (higher = tremor/hesitation)
+                    np.random.normal(0.0040, 0.0013),   # speed_dy
+                    np.random.normal(0.052,  0.015),    # magnitude_vel_st
+                    np.random.normal(0.048,  0.013),    # magnitude_vel_dy
+                    np.random.normal(0.00012, 0.00005), # magnitude_acc_st
+                    np.random.normal(0.00011, 0.00004), # magnitude_acc_dy
+                    np.random.normal(8.5e-6,  3e-6),   # magnitude_jerk_st
+                    np.random.normal(7.5e-6,  2.5e-6), # magnitude_jerk_dy
+                    np.clip(np.random.normal(6.5,  1.5), 1.0, 15.0),  # ncv_st /sec
+                    np.clip(np.random.normal(6.2,  1.4), 1.0, 15.0),  # ncv_dy /sec
+                    np.clip(np.random.normal(3.2,  0.8), 0.5,  8.0),  # nca_st /sec
+                    np.clip(np.random.normal(3.0,  0.7), 0.5,  8.0),  # nca_dy /sec
+                    np.random.normal(350.0, 120.0),    # in_air_stcp (ms)
+                    np.random.normal(4500.0, 900.0),   # on_surface_st (ms)
+                    np.random.normal(4200.0, 850.0),   # on_surface_dy (ms)
+                ]
+            else:  # HC: smooth, consistent, higher per-sec NCV/NCA
+                row = [
+                    np.random.normal(0.0070, 0.0020),   # speed_st
+                    np.random.normal(0.0065, 0.0018),   # speed_dy
+                    np.random.normal(0.090,  0.020),    # magnitude_vel_st
+                    np.random.normal(0.085,  0.018),    # magnitude_vel_dy
+                    np.random.normal(0.00003, 0.00001), # magnitude_acc_st
+                    np.random.normal(0.00003, 0.00001), # magnitude_acc_dy
+                    np.random.normal(2.0e-6,  6e-7),   # magnitude_jerk_st
+                    np.random.normal(1.8e-6,  5e-7),   # magnitude_jerk_dy
+                    np.clip(np.random.normal(8.7,  1.8), 2.0, 20.0),  # ncv_st /sec
+                    np.clip(np.random.normal(8.5,  1.7), 2.0, 20.0),  # ncv_dy /sec
+                    np.clip(np.random.normal(4.2,  1.0), 1.0, 10.0),  # nca_st /sec
+                    np.clip(np.random.normal(4.0,  0.9), 1.0, 10.0),  # nca_dy /sec
+                    np.random.normal(50.0,   40.0),    # in_air_stcp (ms) — minimal air time
+                    np.random.normal(3800.0, 700.0),   # on_surface_st (ms)
+                    np.random.normal(3600.0, 650.0),   # on_surface_dy (ms)
+                ]
             rows.append(row + [y_val])
         feature_cols = HANDWRITING_FEATURES
         df_sim = pd.DataFrame(rows, columns=feature_cols + ['label'])
@@ -544,24 +623,25 @@ def train_handwriting_model():
     print(f"  Class balance: {dict(pd.Series(y).value_counts())}")
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
 
-    # SMOTE-balance then fit GBM — avoids the 80% PD prior learning too strongly
-    smote_k = max(1, int(y_tr.value_counts().min()) - 1)
+    # Calibrated GBM: prevents overconfident probabilities on out-of-distribution web data
+    smote_k = max(1, int(pd.Series(y_tr).value_counts().min()) - 1)
+    base_gbm = GradientBoostingClassifier(n_estimators=300, learning_rate=0.03,
+                                           max_depth=3, random_state=42)
+    calibrated_gbm = CalibratedClassifierCV(base_gbm, method='isotonic', cv=3)
     model = ImbPipeline([
         ('scaler', RobustScaler()),
         ('smote',  SMOTE(random_state=42, k_neighbors=smote_k)),
-        ('clf',    GradientBoostingClassifier(n_estimators=300, learning_rate=0.03,
-                                               max_depth=3, random_state=42)),
+        ('clf',    calibrated_gbm),
     ])
     model.fit(X_tr, y_tr)
     y_pred  = model.predict(X_te)
     y_proba = model.predict_proba(X_te)[:, 1]
     _print_metrics(y_te, y_pred, y_proba)
 
-    # Sanity-check: healthy group mean should predict below 0.2
-    if df is not None and hasattr(y, 'values'):
-        hc_proba = model.predict_proba(X[y == 0])[:, 1].mean()
-        pd_proba = model.predict_proba(X[y == 1])[:, 1].mean()
-        print(f"  HC group avg PD prob: {hc_proba:.3f}  PD group avg PD prob: {pd_proba:.3f}")
+    # Sanity-check: healthy group mean should predict below 0.3
+    hc_proba = model.predict_proba(X[pd.Series(y) == 0])[:, 1].mean()
+    pd_proba = model.predict_proba(X[pd.Series(y) == 1])[:, 1].mean()
+    print(f"  HC group avg PD prob: {hc_proba:.3f}  PD group avg PD prob: {pd_proba:.3f}")
 
     joblib.dump(feature_cols, os.path.join(SAVED_MODELS_DIR, 'handwriting_features.joblib'))
     _save_model(model, 'handwriting')

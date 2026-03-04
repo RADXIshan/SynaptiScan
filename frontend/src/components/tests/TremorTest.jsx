@@ -101,7 +101,7 @@ export default function TremorTest() {
 
   if (step === 'demo') {
     return (
-      <div className="max-w-4xl mx-auto animate-fade-in-up">
+      <div className="max-w-6xl mx-auto animate-fade-in-up">
         <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors">
           <ArrowLeft size={20} /> Restart Assessment
         </Link>
@@ -148,12 +148,12 @@ export default function TremorTest() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in-up">
+    <div className="max-w-6xl mx-auto animate-fade-in-up">
       <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors">
         <ArrowLeft size={20} /> Restart Assessment
       </Link>
       
-      <div className="glass rounded-3xl p-8 relative overflow-hidden flex flex-col min-h-[700px] sm:min-h-[600px] bg-white/60">
+      <div className="glass rounded-3xl p-8 relative overflow-hidden flex flex-col min-h-[800px] bg-white/60">
         <header className="flex items-center justify-between mb-6 z-10">
           <div className="flex items-center gap-4">
             <div className="p-3 bg-rose-100 text-rose-600 rounded-xl">
@@ -174,7 +174,7 @@ export default function TremorTest() {
         ) : (
           <div className="flex flex-col gap-4 flex-1">
             {/* Full-frame video — no overlay */}
-            <div className="flex-1 bg-slate-900 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-center shadow-inner min-h-0">
+            <div className="flex-1 bg-slate-900 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-center shadow-inner min-h-[480px]">
               <video
                 ref={videoRef}
                 autoPlay

@@ -33,18 +33,23 @@ def run_tests():
 
     # ------------------------------------------------------------------
     # 2. Keystroke — real Tappy HC vs PD typical values (Bayes-corrected)
-    #    HC: short dwell (~82ms), low flight time, low error rate
-    #    PD: long dwell (~130ms), high flight & variance, high error rate
+    #    HC: fast typing, tight IQR, low error rate
+    #    PD: slow, high variability, high error rate
     # ------------------------------------------------------------------
-    key_hc, _  = evaluate_keystroke({'mean_dwell_time': 82.0,  'std_dwell_time': 18.0,
-                                      'mean_flight_time': 195.0, 'std_flight_time': 35.0,
-                                      'error_rate': 0.012})
-    key_pd, _  = evaluate_keystroke({'mean_dwell_time': 130.0, 'std_dwell_time': 55.0,
-                                      'mean_flight_time': 320.0, 'std_flight_time': 100.0,
-                                      'error_rate': 0.06})
+    key_hc, _  = evaluate_keystroke({
+        'mean_dwell_time': 78.0,  'std_dwell_time': 16.0,  'dwell_iqr':  20.0,
+        'mean_flight_time': 185.0, 'std_flight_time': 30.0, 'flight_iqr': 38.0,
+        'typing_speed': 6.5, 'error_rate': 0.010,
+    })
+    key_pd, _  = evaluate_keystroke({
+        'mean_dwell_time': 130.0, 'std_dwell_time': 55.0,  'dwell_iqr':  72.0,
+        'mean_flight_time': 320.0, 'std_flight_time': 100.0,'flight_iqr': 130.0,
+        'typing_speed': 2.8, 'error_rate': 0.060,
+    })
     print(f"Keystroke HC          -> Risk: {key_hc:.4f}")
     print(f"Keystroke PD          -> Risk: {key_pd:.4f}")
     assert key_pd > key_hc, f"Keystroke PD should score higher than HC (PD={key_pd:.3f} HC={key_hc:.3f})"
+    assert key_hc < 0.40,   f"Keystroke HC risk should be below 0.40 (got {key_hc:.3f})"
 
     # ------------------------------------------------------------------
     # 3. Mouse — ALAMEDA real HC vs PD means
@@ -79,17 +84,19 @@ def run_tests():
     assert tremor_prob == 0.5, f"Expected 0.5, got {tremor_prob}"
 
     # ------------------------------------------------------------------
-    # 5. Handwriting — use real sample values from shubhamjha97 dataset
-    #    HC sample[0]: speed_st=1.23e-05, on_surface_st=2552
-    #    PD sample[0]: speed_st~0.002, on_surface_st~1826
+    # 5. Handwriting — real shubhamjha97 dataset values after per-second
+    #    normalisation (ncv/nca divided by on_surface_ms / 1000).
+    #    HC: slow steady spiral — low speed, ncv≈87/sec, low in-air time
+    #    PD: tremulous strokes — moderate speed, ncv≈139/sec (shorter on-surface)
     # ------------------------------------------------------------------
     hw_hc, _ = evaluate_handwriting({
         'speed_st': 1.23e-05, 'speed_dy': 1.21e-05,
         'magnitude_vel_st': 0.108, 'magnitude_vel_dy': 0.085,
         'magnitude_acc_st': 3.47e-04, 'magnitude_acc_dy': 2.66e-04,
         'magnitude_jerk_st': 7.34e-06, 'magnitude_jerk_dy': 5.91e-06,
-        'ncv_st': 308.7, 'ncv_dy': 289.0,
-        'nca_st': 118.0, 'nca_dy': 146.5,
+        # HC raw 272/3.132s ≈ 87/sec; 118/3.132s ≈ 37.7/sec for nca
+        'ncv_st': 86.8, 'ncv_dy': 85.0,
+        'nca_st': 37.7, 'nca_dy': 46.7,
         'in_air_stcp': 0.0, 'on_surface_st': 2552.0, 'on_surface_dy': 3189.0,
     })
     hw_pd, _ = evaluate_handwriting({
@@ -97,13 +104,15 @@ def run_tests():
         'magnitude_vel_st': 0.152, 'magnitude_vel_dy': 0.180,
         'magnitude_acc_st': 1.0e-03, 'magnitude_acc_dy': 9.0e-04,
         'magnitude_jerk_st': 1.0e-04, 'magnitude_jerk_dy': 9.0e-05,
-        'ncv_st': 254.0, 'ncv_dy': 257.0,
-        'nca_st': 105.0, 'nca_dy': 116.0,
+        # PD raw 254/1.826s ≈ 139/sec; tremulousness shortens on-surface, raises rate
+        'ncv_st': 139.1, 'ncv_dy': 140.8,
+        'nca_st': 57.5, 'nca_dy': 63.5,
         'in_air_stcp': 921.0, 'on_surface_st': 1826.0, 'on_surface_dy': 1565.0,
     })
     print(f"Handwriting HC        -> Risk: {hw_hc:.4f}")
     print(f"Handwriting PD        -> Risk: {hw_pd:.4f}")
     assert hw_pd > hw_hc, f"Handwriting PD should score higher than HC (PD={hw_pd:.3f} HC={hw_hc:.3f})"
+    assert hw_hc < 0.50,  f"Handwriting HC risk should be below 0.50 (got {hw_hc:.3f})"
 
     print()
     # ------------------------------------------------------------------

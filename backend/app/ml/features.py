@@ -96,7 +96,15 @@ def extract_handwriting_features(strokes: list) -> dict:
     # (Typical raw pixel velocity might be 300 px/sec. Dataset healthy is ~0.007)
     # Scale factor ~ 0.00002
     SCALE = 0.00002
-    
+
+    # Normalise ncv/nca to per-second rates.
+    # Raw counts are sampling-rate-dependent: browser mouse fires at ~60 Hz
+    # while the shubhamjha97 tablet stylus fires at 100–200 Hz.  Converting
+    # to per-second makes both devices land in the same feature space.
+    on_surface_sec = max(on_surface_time_ms / 1000.0, 0.1)
+    ncv_rate = float(ncv) / on_surface_sec
+    nca_rate = float(nca) / on_surface_sec
+
     return {
         'speed_st': mean_vel * SCALE,
         'speed_dy': mean_vel * SCALE,
@@ -106,12 +114,13 @@ def extract_handwriting_features(strokes: list) -> dict:
         'magnitude_acc_dy': mean_acc * (SCALE**2),
         'magnitude_jerk_st': mean_jerk * (SCALE**3),
         'magnitude_jerk_dy': mean_jerk * (SCALE**3),
-        
-        'ncv_st': float(ncv),
-        'ncv_dy': float(ncv),
-        'nca_st': float(nca),
-        'nca_dy': float(nca),
-        
+
+        # Per-second rates — device-agnostic
+        'ncv_st': ncv_rate,
+        'ncv_dy': ncv_rate,
+        'nca_st': nca_rate,
+        'nca_dy': nca_rate,
+
         'in_air_stcp': float(in_air_time_ms),
         'on_surface_st': float(on_surface_time_ms),
         'on_surface_dy': float(on_surface_time_ms),
@@ -121,48 +130,72 @@ def extract_keystroke_features(keystrokes: list) -> dict:
     """
     Computes keystroke dynamics features from raw key events.
     Expected format: [{'key': 'a', 'down': 1600000000, 'up': 1600000100}, ...]
-    
+
     Derived features:
-    - mean_dwell_time, std_dwell_time (ms)
-    - mean_flight_time, std_flight_time (ms)
-    - error_rate (backspace ratio)
+    - mean_dwell_time, std_dwell_time   (ms)   — how long each key is held
+    - dwell_iqr                         (ms)   — spread / variability of hold times
+    - mean_flight_time, std_flight_time (ms)   — gap between key releases and next press
+    - flight_iqr                        (ms)   — spread of inter-key gaps
+    - typing_speed                      (chars/sec) — overall throughput
+    - error_rate                        (ratio)     — backspace fraction
+
+    dwell_iqr, flight_iqr, and typing_speed add diagnostic power over the
+    original 5 features: PD patients show wider variability and slower speed
+    even when mean timings overlap with healthy users.
     """
     if not keystrokes or len(keystrokes) < 2:
         return {}
-        
+
     dwell_times = []
     flight_times = []
     backspaces = 0
     total_keys = len(keystrokes)
-    
+
     # Sort chronologically by down-time just in case
     strokes = sorted(keystrokes, key=lambda x: x.get('down', 0))
-    
+
     for i in range(len(strokes)):
         stroke = strokes[i]
-        
+
         # Count backspaces for error rate
         if stroke.get('key', '').lower() == 'backspace':
             backspaces += 1
-            
+
         down = stroke.get('down', 0)
         up = stroke.get('up', 0)
-        
+
         if up > down:
             dwell_times.append(up - down)
-            
+
         # Flight time (current up to next down)
         if i < len(strokes) - 1:
-            next_down = strokes[i+1].get('down', 0)
+            next_down = strokes[i + 1].get('down', 0)
             if next_down > up:
                 flight_times.append(next_down - up)
-                
+
+    # Typing speed: non-backspace characters per second elapsed
+    non_bs_keys = total_keys - backspaces
+    if strokes:
+        elapsed_sec = max((strokes[-1].get('up', 0) - strokes[0].get('down', 0)) / 1000.0, 0.1)
+    else:
+        elapsed_sec = 1.0
+    typing_speed = float(non_bs_keys / elapsed_sec)
+
+    # IQR helpers
+    def _iqr(arr):
+        if len(arr) < 4:
+            return float(np.std(arr)) if arr else 15.0
+        return float(np.percentile(arr, 75) - np.percentile(arr, 25))
+
     return {
-        'mean_dwell_time': float(np.mean(dwell_times)) if dwell_times else 80.0,
-        'std_dwell_time': float(np.std(dwell_times)) if dwell_times else 15.0,
+        'mean_dwell_time':  float(np.mean(dwell_times))  if dwell_times  else 80.0,
+        'std_dwell_time':   float(np.std(dwell_times))   if dwell_times  else 15.0,
+        'dwell_iqr':        _iqr(dwell_times),
         'mean_flight_time': float(np.mean(flight_times)) if flight_times else 200.0,
-        'std_flight_time': float(np.std(flight_times)) if flight_times else 30.0,
-        'error_rate': float(backspaces / total_keys) if total_keys > 0 else 0.01,
+        'std_flight_time':  float(np.std(flight_times))  if flight_times else 30.0,
+        'flight_iqr':       _iqr(flight_times),
+        'typing_speed':     typing_speed,
+        'error_rate':       float(backspaces / total_keys) if total_keys > 0 else 0.01,
     }
 
 def extract_mouse_features(trajectory: list) -> dict:
