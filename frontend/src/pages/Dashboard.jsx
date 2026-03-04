@@ -4,8 +4,6 @@ import { motion } from 'framer-motion';
 import { Keyboard, MousePointer, Mic, Video, Edit3, ArrowRight, Activity, Download, Plus, BookOpen, Clock } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { dashboardApi } from '../services/api';
-import html2canvas from 'html2canvas';
-import { jsPDF } from 'jspdf';
 
 export default function Dashboard() {
   const [loading, setLoading] = useState(true);
@@ -86,22 +84,20 @@ export default function Dashboard() {
     fetchDashboardData();
   }, []);
 
-  const handleExportPDF = async () => {
+  const handleExportCSV = async () => {
     setIsExporting(true);
-    const element = document.getElementById('dashboard-content');
-    if (element) {
-      try {
-        const canvas = await html2canvas(element, { scale: 2, useCORS: true });
-        const imgData = canvas.toDataURL('image/png');
-        const pdf = new jsPDF('p', 'mm', 'a4');
-        const pdfWidth = pdf.internal.pageSize.getWidth();
-        const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-        
-        pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-        pdf.save('SynaptiScan_Report.pdf');
-      } catch (err) {
-        console.error("Failed to export PDF", err);
-      }
+    try {
+      const blob = await dashboardApi.exportCsv();
+      const url = window.URL.createObjectURL(new Blob([blob]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'SynaptiScan_Data.csv');
+      document.body.appendChild(link);
+      link.click();
+      link.parentNode.removeChild(link);
+      window.URL.revokeObjectURL(url);
+    } catch (err) {
+      console.error("Failed to export CSV", err);
     }
     setIsExporting(false);
   };
@@ -136,11 +132,11 @@ export default function Dashboard() {
         {!loading && data.has_data && (
           <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
             <button 
-              onClick={handleExportPDF}
+              onClick={handleExportCSV}
               disabled={isExporting}
               className="inline-flex items-center gap-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 px-4 py-2.5 rounded-xl font-medium transition-all shadow-sm disabled:opacity-50"
             >
-              <Download size={18} /> {isExporting ? 'Exporting...' : 'Export PDF'}
+              <Download size={18} /> {isExporting ? 'Exporting...' : 'Export CSV'}
             </button>
             <Link to="/test-select" className="inline-flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white px-5 py-2.5 rounded-xl font-medium transition-all shadow-lg shadow-emerald-500/25 active:scale-95 group">
                <Activity size={18} className="group-hover:animate-pulse" /> Start New Assessment

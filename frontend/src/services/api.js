@@ -68,6 +68,11 @@ export const dashboardApi = {
   addJournalEntry: async (entry) => {
     const response = await api.post('dashboard/journal', entry);
     return response.data;
+  },
+  
+  exportCsv: async () => {
+    const response = await api.get('dashboard/export', { responseType: 'blob' });
+    return response.data;
   }
 };
 

@@ -1,10 +1,12 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Response
 from sqlalchemy.orm import Session
 from ..db import models, schemas
 from ..db.database import get_db
 from .auth import get_current_user
 from typing import List
 from sqlalchemy import asc
+import csv
+import io
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -75,3 +77,45 @@ def create_journal_entry(entry: schemas.JournalEntryCreate, db: Session = Depend
     db.commit()
     db.refresh(db_entry)
     return db_entry
+
+@router.get("/export")
+def export_dashboard_data(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    sessions = db.query(models.ScreeningSession).filter(
+        models.ScreeningSession.user_id == current_user.id
+    ).order_by(models.ScreeningSession.created_at.asc()).all()
+
+    output = io.StringIO()
+    writer = csv.writer(output)
+    
+    # Headers
+    writer.writerow([
+        "Date", 
+        "Overall Risk Score", 
+        "Keystroke Score", 
+        "Mouse Score", 
+        "Voice Score", 
+        "Tremor Score", 
+        "Handwriting Score",
+        "Notes"
+    ])
+    
+    for s in sessions:
+        if s.results:
+            results_map = {r.modality_type: r.score for r in s.results}
+            row = [
+                s.created_at.isoformat(),
+                f"{s.overall_risk_score:.4f}" if s.overall_risk_score is not None else "N/A",
+                f"{results_map.get('keystroke'):.4f}" if results_map.get('keystroke') is not None else "N/A",
+                f"{results_map.get('mouse'):.4f}" if results_map.get('mouse') is not None else "N/A",
+                f"{results_map.get('voice'):.4f}" if results_map.get('voice') is not None else "N/A",
+                f"{results_map.get('tremor'):.4f}" if results_map.get('tremor') is not None else "N/A",
+                f"{results_map.get('handwriting'):.4f}" if results_map.get('handwriting') is not None else "N/A",
+                s.notes or ""
+            ]
+            writer.writerow(row)
+
+    return Response(
+        content=output.getvalue(),
+        media_type="text/csv",
+        headers={"Content-Disposition": "attachment; filename=synaptiscan_data.csv"}
+    )
