@@ -30,7 +30,7 @@ app.add_middleware(
 
 from app.api import auth, ingestion, dashboard
 from app.db.database import engine, Base
-from app.db import models  # noqa: F401 — ensures models are registered with Base
+from app.db import models  
 
 # Create all database tables on startup (safe to call multiple times)
 Base.metadata.create_all(bind=engine)
