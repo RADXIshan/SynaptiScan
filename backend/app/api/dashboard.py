@@ -4,6 +4,7 @@ from ..db import models, schemas
 from ..db.database import get_db
 from .auth import get_current_user
 from typing import List
+from sqlalchemy import asc
 
 router = APIRouter(prefix="/dashboard", tags=["dashboard"])
 
@@ -32,9 +33,17 @@ def get_dashboard_summary(db: Session = Depends(get_db), current_user: models.Us
         latest_session.overall_risk_score = avg_score
         db.commit()
         
+    # Get extended recent sessions for trend line
     recent_sessions = db.query(models.ScreeningSession).filter(
         models.ScreeningSession.user_id == current_user.id
-    ).order_by(models.ScreeningSession.created_at.desc()).limit(5).all()
+    ).order_by(models.ScreeningSession.created_at.desc()).limit(20).all()
+    
+    # Calculate baseline (the very first session)
+    first_session = db.query(models.ScreeningSession).filter(
+        models.ScreeningSession.user_id == current_user.id
+    ).order_by(models.ScreeningSession.created_at.asc()).first()
+    
+    baseline_score = first_session.overall_risk_score if first_session else None
     
     trend = [{"date": s.created_at, "score": s.overall_risk_score} for s in reversed(recent_sessions)]
     
@@ -48,6 +57,21 @@ def get_dashboard_summary(db: Session = Depends(get_db), current_user: models.Us
     return {
         "has_data": True,
         "latest_score": latest_session.overall_risk_score,
+        "baseline_score": baseline_score,
         "modality_breakdown": modality_breakdown,
         "trend": trend
     }
+
+@router.get("/journal", response_model=List[schemas.JournalEntryRead])
+def get_journal_entries(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    return db.query(models.JournalEntry).filter(
+        models.JournalEntry.user_id == current_user.id
+    ).order_by(models.JournalEntry.created_at.desc()).limit(50).all()
+
+@router.post("/journal", response_model=schemas.JournalEntryRead)
+def create_journal_entry(entry: schemas.JournalEntryCreate, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    db_entry = models.JournalEntry(**entry.model_dump(), user_id=current_user.id)
+    db.add(db_entry)
+    db.commit()
+    db.refresh(db_entry)
+    return db_entry

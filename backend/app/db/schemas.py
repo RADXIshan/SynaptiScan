@@ -70,3 +70,20 @@ class ScreeningSessionRead(ScreeningSessionBase):
     
     class Config:
         from_attributes = True
+
+# --- JOURNAL SCHEMAS ---
+class JournalEntryBase(BaseModel):
+    entry_type: str
+    content: str
+    severity: Optional[int] = None
+
+class JournalEntryCreate(JournalEntryBase):
+    pass
+
+class JournalEntryRead(JournalEntryBase):
+    id: int
+    user_id: int
+    created_at: datetime
+    
+    class Config:
+        from_attributes = True

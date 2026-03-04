@@ -17,6 +17,20 @@ class User(Base):
     data_consent = Column(Boolean, default=False)
     
     sessions = relationship("ScreeningSession", back_populates="user")
+    journal_entries = relationship("JournalEntry", back_populates="user", cascade="all, delete-orphan")
+
+
+class JournalEntry(Base):
+    __tablename__ = "journal_entries"
+    
+    id = Column(Integer, primary_key=True, index=True)
+    user_id = Column(Integer, ForeignKey("users.id"))
+    entry_type = Column(String, index=True) # "symptom" or "medication"
+    content = Column(Text, nullable=False)
+    severity = Column(Integer, nullable=True) # 1-10 stringency or dosage indication
+    created_at = Column(DateTime(timezone=True), server_default=func.now())
+    
+    user = relationship("User", back_populates="journal_entries")
 
 
 class ScreeningSession(Base):

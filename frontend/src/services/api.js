@@ -58,6 +58,16 @@ export const dashboardApi = {
   getSummary: async () => {
     const response = await api.get('dashboard/summary');
     return response.data;
+  },
+  
+  getJournalEntries: async () => {
+    const response = await api.get('dashboard/journal');
+    return response.data;
+  },
+  
+  addJournalEntry: async (entry) => {
+    const response = await api.post('dashboard/journal', entry);
+    return response.data;
   }
 };
 
