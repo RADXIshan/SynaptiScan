@@ -284,13 +284,36 @@ def extract_voice_features(audio_path: str) -> list:
      'MDVP:APQ', 'Shimmer:DDA', 'NHR', 'HNR', 'RPDE', 'DFA',
      'spread1', 'spread2', 'D2', 'PPE']
     """
+    temp_wav_path = None
     try:
         import parselmouth
         from parselmouth.praat import call
-        # Try to load audio (might need ffmpeg installed for webm, else expects wav/mp3)
-        snd = parselmouth.Sound(audio_path)
+        import imageio_ffmpeg
+        import subprocess
+        import os
+        import uuid
+        
+        # parselmouth expects wav/mp3. Browsers record webm. Need to explicitly convert.
+        ffmpeg_exe = imageio_ffmpeg.get_ffmpeg_exe()
+        temp_wav_path = f"/tmp/synaptiscan_voice_eval_{uuid.uuid4().hex}.wav"
+        
+        # Convert webm to wav using ffmpeg
+        subprocess.run(
+            [ffmpeg_exe, "-y", "-i", audio_path, temp_wav_path],
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
+            check=True
+        )
+        
+        # Try to load converted audio
+        snd = parselmouth.Sound(temp_wav_path)
     except Exception as e:
         print(f"Error loading audio with parselmouth: {e}")
+        if temp_wav_path and os.path.exists(temp_wav_path):
+            try:
+                os.remove(temp_wav_path)
+            except:
+                pass
         return []
 
     try:
@@ -365,6 +388,12 @@ def extract_voice_features(audio_path: str) -> list:
     except Exception as e:
         print(f"Error computing voice features: {e}")
         return []
+    finally:
+        if temp_wav_path and os.path.exists(temp_wav_path):
+            try:
+                os.remove(temp_wav_path)
+            except:
+                pass
 
 def extract_tremor_features(video_path: str) -> list:
     """

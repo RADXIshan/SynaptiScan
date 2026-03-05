@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
-import { Keyboard, MousePointer, Mic, Video, Edit3, ArrowRight, Activity, Download, Plus, BookOpen, Clock } from 'lucide-react';
+import { Keyboard, MousePointer, Mic, Video, Edit3, ArrowRight, Activity, Download, Plus, BookOpen, Clock, Info } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { dashboardApi } from '../services/api';
 
@@ -222,7 +222,7 @@ export default function Dashboard() {
             </motion.div>
           </div>
           )}
-          <div className="space-y-4 pt-6">
+          <div className="space-y-4 pt-6 relative z-20">
             <div className="flex items-center justify-between mb-4">
               <h2 className="text-2xl font-bold text-slate-900">Modality Breakdown</h2>
               <Link to="/test-select" className="flex items-center gap-2 text-emerald-600 hover:text-emerald-500 transition text-sm font-semibold">
@@ -237,13 +237,27 @@ export default function Dashboard() {
                   <motion.div
                     key={idx}
                     whileHover={{ scale: 1.02 }}
-                    className="glass p-5 rounded-2xl flex flex-col border border-slate-200 hover:border-emerald-300 transition-colors"
+                    className="glass p-5 rounded-2xl flex flex-col border border-slate-200 hover:border-emerald-300 transition-colors relative hover:z-50"
                   >
-                    <div className="flex items-center justify-between mb-4 text-emerald-600">
+                    <div className="flex items-center justify-between mb-4 text-emerald-600 relative z-100">
                       <IconComponent size={24} />
-                      <span className="text-sm font-medium bg-slate-100 px-2 py-1 rounded-md text-slate-600">
-                        {m.score !== null ? `${(m.score * 100).toFixed(0)}%` : 'N/A'}
-                      </span>
+                      <div className="flex items-center gap-2 group relative">
+                        {m.score !== null && (
+                          <div className="absolute right-0 top-full mt-2 hidden group-hover:block w-56 p-3 bg-slate-800 text-slate-100 text-xs rounded-lg shadow-xl z-100 font-normal leading-relaxed text-left border border-slate-700 transition-opacity duration-200">
+                            <strong>What this means:</strong>
+                            <p className="mt-1 text-slate-300">
+                              Higher percentage = greater deviation from normal healthy patterns (higher signal).
+                            </p>
+                            <p className="mt-2 text-slate-300">
+                              Lower percentage = closer to normal healthy baseline patterns.
+                            </p>
+                          </div>
+                        )}
+                        <span className="text-sm font-medium bg-slate-100 px-2 py-1 rounded-md text-slate-600 cursor-help flex items-center gap-1.5 hover:bg-slate-200 transition-colors">
+                          {m.score !== null ? `${(m.score * 100).toFixed(0)}%` : 'N/A'}
+                          {m.score !== null && <Info size={14} className="text-slate-400" />}
+                        </span>
+                      </div>
                     </div>
                     <h3 className="capitalize text-slate-800 font-medium mb-1">{m.type}</h3>
                     <p className="text-xs text-slate-500">
@@ -262,7 +276,7 @@ export default function Dashboard() {
           </div>
           
           {/* Medication & Symptom Journal Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 pt-6 relative z-10">
             <div className="glass p-6 md:p-8 rounded-3xl border border-slate-200">
               <div className="flex items-center gap-3 mb-6">
                 <BookOpen className="text-emerald-600" size={24} />
