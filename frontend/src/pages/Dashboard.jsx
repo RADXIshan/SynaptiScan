@@ -171,7 +171,19 @@ export default function Dashboard() {
               className="glass rounded-3xl p-8 flex flex-col justify-center col-span-1 border-t-4 border-t-emerald-600 relative overflow-hidden h-96 lg:h-[400px]"
             >
               <div className="absolute top-0 right-0 p-32 bg-emerald-500/10 rounded-full blur-[60px] -mr-16 -mt-16 pointer-events-none" />
-              <h2 className="text-slate-700 font-semibold mb-4 text-xl">Global PD-like Signal</h2>
+              <div className="flex items-center gap-2 mb-4 group relative w-max">
+                <h2 className="text-slate-700 font-semibold text-xl">Global PD-like Signal</h2>
+                <Info size={18} className="text-slate-400 cursor-help" />
+                <div className="absolute left-0 top-full mt-2 hidden group-hover:block w-72 p-3 bg-slate-800 text-slate-100 text-xs rounded-lg shadow-xl z-100 font-normal leading-relaxed text-left border border-slate-700 transition-opacity duration-200">
+                  <strong>What this means:</strong>
+                  <p className="mt-1 text-slate-300">
+                    A composite score derived from all your modality assessments.
+                  </p>
+                  <p className="mt-2 text-slate-300">
+                    Higher score = greater deviation from normal healthy baseline patterns (higher signal).
+                  </p>
+                </div>
+              </div>
               <div className="flex items-baseline gap-2 mb-6">
                 <span className="text-8xl font-bold text-slate-900 tracking-tighter">{(data.latest_score * 100).toFixed(0)}</span>
                 <span className="text-2xl text-slate-500">/ 100</span>
