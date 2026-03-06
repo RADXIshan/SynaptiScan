@@ -49,7 +49,7 @@ def get_dashboard_summary(db: Session = Depends(get_db), current_user: models.Us
     
     trend = [{"date": s.created_at, "score": s.overall_risk_score} for s in reversed(recent_sessions)]
     
-    ALL_MODALITIES = ["keystroke", "mouse", "voice", "tremor", "handwriting"]
+    ALL_MODALITIES = ["keystroke", "mouse", "voice", "tremor", "handwriting", "cognition"]
     results_map = {r.modality_type: r.score for r in results}
     modality_breakdown = [
         {"type": m, "score": results_map.get(m, None)}
@@ -96,6 +96,7 @@ def export_dashboard_data(db: Session = Depends(get_db), current_user: models.Us
         "Voice Score", 
         "Tremor Score", 
         "Handwriting Score",
+        "Cognition Score",
         "Notes"
     ])
     
@@ -110,6 +111,7 @@ def export_dashboard_data(db: Session = Depends(get_db), current_user: models.Us
                 f"{results_map.get('voice'):.4f}" if results_map.get('voice') is not None else "N/A",
                 f"{results_map.get('tremor'):.4f}" if results_map.get('tremor') is not None else "N/A",
                 f"{results_map.get('handwriting'):.4f}" if results_map.get('handwriting') is not None else "N/A",
+                f"{results_map.get('cognition'):.4f}" if results_map.get('cognition') is not None else "N/A",
                 s.notes or ""
             ]
             writer.writerow(row)

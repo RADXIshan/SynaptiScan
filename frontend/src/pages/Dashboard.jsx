@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
-import { Keyboard, MousePointer, Mic, Video, Edit3, ArrowRight, Activity, Download, Plus, BookOpen, Clock, Info } from 'lucide-react';
+import { Keyboard, MousePointer, Mic, Video, Edit3, ArrowRight, Activity, Download, Plus, BookOpen, Clock, Info, Brain, Sparkles } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { dashboardApi } from '../services/api';
 
@@ -39,7 +39,8 @@ export default function Dashboard() {
           mouse: MousePointer,
           voice: Mic,
           tremor: Video,
-          handwriting: Edit3
+          handwriting: Edit3,
+          cognition: Brain
         };
         
         const defaultModalities = [
@@ -47,7 +48,8 @@ export default function Dashboard() {
           { type: 'mouse', icon: MousePointer, score: null },
           { type: 'voice', icon: Mic, score: null },
           { type: 'tremor', icon: Video, score: null },
-          { type: 'handwriting', icon: Edit3, score: null }
+          { type: 'handwriting', icon: Edit3, score: null },
+          { type: 'cognition', icon: Brain, score: null }
         ];
         
         // Build a lookup from whatever the API returned, then fill all 5 slots.
@@ -242,7 +244,7 @@ export default function Dashboard() {
               </Link>
             </div>
             
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-4">
               {data.modality_breakdown.map((m, idx) => {
                 const IconComponent = m.icon;
                 return (

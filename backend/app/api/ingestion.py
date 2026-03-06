@@ -207,3 +207,35 @@ async def upload_handwriting(
     db.refresh(result)
 
     return {"status": "success", "result_id": result.id, "score": score}
+
+@router.post("/cognition")
+async def upload_cognition(
+    session_id: int = Form(...),
+    payload: str = Form(...),
+    db: Session = Depends(get_db),
+    current_user: models.User = Depends(get_current_user)
+):
+    db_session = db.query(models.ScreeningSession).filter(
+        models.ScreeningSession.id == session_id,
+        models.ScreeningSession.user_id == current_user.id
+    ).first()
+    
+    if not db_session:
+        raise HTTPException(status_code=404, detail="Session not found")
+
+    data = json.loads(payload)
+    
+    from ..ml.models import evaluate_cognition
+    score, uncertainty = evaluate_cognition(data)
+
+    result = models.ModalityResult(
+        session_id=session_id,
+        modality_type="cognition",
+        score=score,
+        uncertainty=uncertainty,
+    )
+    db.add(result)
+    db.commit()
+    db.refresh(result)
+
+    return {"status": "success", "result_id": result.id, "score": score}

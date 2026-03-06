@@ -86,7 +86,7 @@ export default function HandwritingTest() {
         canvas_width: canvasRef.current.width,
         canvas_height: canvasRef.current.height
       });
-      navigate('/dashboard');
+      navigate('/test/cognition');
     } catch (err) {
       console.error(err);
       alert("Failed to submit data.");

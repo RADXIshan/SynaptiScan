@@ -264,3 +264,45 @@ def evaluate_handwriting(payload: dict):
     prob = 0.05 + 0.85 * prob
     uncertainty = float(max(0.05, 1.0 - max(prob, 1.0 - prob)))
     return prob, uncertainty
+
+def evaluate_cognition(payload: dict):
+    """
+    Cognition (Stroop) test analysis.
+    
+    Expected payload keys:
+      congruent_rt_mean (ms)
+      incongruent_rt_mean (ms)
+      error_rate (0-1)
+    """
+    model = get_model('cognition')
+    if not model:
+        return 0.5, 0.2
+
+    default_cols = ['congruent_rt_mean', 'incongruent_rt_mean', 'stroop_effect', 'error_rate']
+    cols = _get_features('cognition', default_cols)
+
+    # Calculate stroop effect if not provided
+    c_rt = payload.get('congruent_rt_mean', 600.0)
+    i_rt = payload.get('incongruent_rt_mean', c_rt + 150.0)
+    s_eff = payload.get('stroop_effect', i_rt - c_rt)
+    err = payload.get('error_rate', 0.03)
+
+    row = {
+        'congruent_rt_mean': c_rt,
+        'incongruent_rt_mean': i_rt,
+        'stroop_effect': s_eff,
+        'error_rate': err
+    }
+    
+    # Ensure correct column order
+    row_ordered = {c: row.get(c, 0.0) for c in cols}
+    X = pd.DataFrame([row_ordered], columns=cols)
+
+    proba = model.predict_proba(X)[0]
+    prob = float(proba[1])
+    
+    # Soft clamp
+    prob = 0.05 + 0.85 * prob
+    uncertainty = float(max(0.05, 1.0 - max(proba)))
+    
+    return prob, uncertainty

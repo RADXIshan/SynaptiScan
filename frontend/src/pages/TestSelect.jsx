@@ -30,7 +30,7 @@ export default function TestSelect() {
         </h1>
         
         <p className="text-slate-600 text-lg md:text-xl leading-relaxed mb-8">
-          You will now complete 5 short activities assessing your micro-motor functions, typing rhythm, vocal patterns, and postural stability.
+          You will now complete 6 short activities assessing your micro-motor functions, typing rhythm, vocal patterns, postural stability, and cognitive reaction times.
         </p>
 
         <div className="flex items-center justify-center gap-2 text-sm text-emerald-600 font-medium mb-10 bg-emerald-50 py-2 px-4 rounded-full w-max mx-auto border border-emerald-200">
