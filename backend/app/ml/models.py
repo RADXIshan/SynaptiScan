@@ -306,3 +306,4 @@ def evaluate_cognition(payload: dict):
     uncertainty = float(max(0.05, 1.0 - max(proba)))
     
     return prob, uncertainty
+# trigger reload

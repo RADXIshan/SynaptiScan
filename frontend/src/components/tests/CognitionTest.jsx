@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
 import { Brain, ArrowRight, Activity, Clock, AlertTriangle, CheckCircle, RotateCcw } from 'lucide-react';
-import { dashboardApi } from '../../services/api';
+import { ingestionApi } from '../../services/api';
 import { useNavigate } from 'react-router';
 
 // The classic Stroop effect: words and colors mismatching
@@ -146,8 +146,8 @@ export default function CognitionTest({ sessionId, onComplete }) {
             error_rate: scoreData.errors / TOTAL_TRIALS
         };
         
-        // We assume dashboardApi has a postCognition method
-        await dashboardApi.uploadCognition(sessionId, payload);
+        const activeSessionId = sessionId || localStorage.getItem('sessionId');
+        await ingestionApi.uploadCognition(activeSessionId, payload);
         
         if (onComplete) {
             onComplete();

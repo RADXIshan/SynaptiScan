@@ -73,16 +73,6 @@ export const dashboardApi = {
   exportCsv: async () => {
     const response = await api.get('dashboard/export', { responseType: 'blob' });
     return response.data;
-  },
-  
-  uploadCognition: async (sessionId, payload) => {
-    const formData = new URLSearchParams();
-    formData.append('session_id', sessionId);
-    formData.append('payload', JSON.stringify(payload));
-    const response = await api.post('ingestion/cognition', formData, {
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    });
-    return response.data;
   }
 };
 
@@ -153,6 +143,16 @@ export const ingestionApi = {
     formData.append('session_id', sessionId);
     formData.append('payload', JSON.stringify(payload));
     const response = await api.post('ingestion/handwriting', formData, {
+      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+    });
+    return response.data;
+  },
+  
+  uploadCognition: async (sessionId, payload) => {
+    const formData = new URLSearchParams();
+    formData.append('session_id', sessionId);
+    formData.append('payload', JSON.stringify(payload));
+    const response = await api.post('ingestion/cognition', formData, {
       headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
     });
     return response.data;

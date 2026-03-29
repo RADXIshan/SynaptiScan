@@ -1,16 +1,18 @@
 import os
 import pandas as pd
 import numpy as np
-from sklearn.ensemble import RandomForestClassifier
+import xgboost as xgb
 from sklearn.calibration import CalibratedClassifierCV
-from sklearn.model_selection import train_test_split
+from sklearn.model_selection import train_test_split, GridSearchCV
 from sklearn.metrics import classification_report, roc_auc_score
 from imblearn.over_sampling import SMOTE
 import joblib
 
-def generate_synthetic_stroop_data(n_samples=2000):
+def generate_synthetic_stroop_data(n_samples=100000):
     """
-    Generates synthetic Stroop test data mimicking clinical distributions.
+    Generates high-fidelity synthetic Stroop test data mimicking clinical distributions.
+    Uses non-linear distributions (Gaussian mixtures) to create overlapping and edge cases
+    between healthy controls and those with cognitive impairment / executive dysfunction.
     
     Features:
     - congruent_rt_mean: Reaction time for matching words/colors (ms)
@@ -23,13 +25,25 @@ def generate_synthetic_stroop_data(n_samples=2000):
     """
     np.random.seed(42)
     
-    # Healthy Controls (label = 0)
-    # Typically faster RTs, smaller Stroop effect, low errors
-    n_hc = int(n_samples * 0.8) # 80% healthy in population
-    hc_c_rt = np.random.normal(loc=600, scale=100, size=n_hc)
-    hc_i_rt = hc_c_rt + np.random.normal(loc=150, scale=50, size=n_hc) # Stroop effect ~150ms
-    hc_err = np.clip(np.random.normal(loc=0.03, scale=0.02, size=n_hc), 0, 1)
-    
+    # Healthy Controls (label = 0) ~85% of population
+    n_hc = int(n_samples * 0.85)
+
+    # Sub-population 1: Young/Fast healthy (50% of healthy)
+    n_hc_fast = int(n_hc * 0.5)
+    hc_c_rt_fast = np.random.normal(loc=1100, scale=150, size=n_hc_fast)
+    hc_i_rt_fast = hc_c_rt_fast + np.random.normal(loc=150, scale=50, size=n_hc_fast)
+    hc_err_fast = np.random.exponential(scale=0.02, size=n_hc_fast)
+
+    # Sub-population 2: Older/Slower healthy (50% of healthy)
+    n_hc_slow = n_hc - n_hc_fast
+    hc_c_rt_slow = np.random.normal(loc=1400, scale=200, size=n_hc_slow)
+    hc_i_rt_slow = hc_c_rt_slow + np.random.normal(loc=200, scale=60, size=n_hc_slow)
+    hc_err_slow = np.random.exponential(scale=0.04, size=n_hc_slow)
+
+    hc_c_rt = np.concatenate([hc_c_rt_fast, hc_c_rt_slow])
+    hc_i_rt = np.concatenate([hc_i_rt_fast, hc_i_rt_slow])
+    hc_err = np.clip(np.concatenate([hc_err_fast, hc_err_slow]), 0.0, 1.0)
+
     hc_data = pd.DataFrame({
         'congruent_rt_mean': hc_c_rt,
         'incongruent_rt_mean': hc_i_rt,
@@ -38,12 +52,24 @@ def generate_synthetic_stroop_data(n_samples=2000):
         'label': 0
     })
     
-    # PD / Impaired (label = 1)
-    # Slower overall RTs, significantly larger Stroop effect (executive dysfunction), higher errors
+    # PD / Impaired (label = 1) ~15% of population
     n_pd = n_samples - n_hc
-    pd_c_rt = np.random.normal(loc=850, scale=150, size=n_pd)
-    pd_i_rt = pd_c_rt + np.random.normal(loc=350, scale=120, size=n_pd) # Stroop effect ~350ms
-    pd_err = np.clip(np.random.normal(loc=0.12, scale=0.08, size=n_pd), 0, 1)
+    
+    # Sub-population 1: Mild impairment (60% of impaired) - highly overlapping with slow healthies
+    n_pd_mild = int(n_pd * 0.6)
+    pd_c_rt_mild = np.random.normal(loc=1800, scale=250, size=n_pd_mild)
+    pd_i_rt_mild = pd_c_rt_mild + np.random.normal(loc=350, scale=100, size=n_pd_mild)
+    pd_err_mild = np.random.normal(loc=0.08, scale=0.04, size=n_pd_mild)
+
+    # Sub-population 2: Severe impairment (40% of impaired)
+    n_pd_severe = n_pd - n_pd_mild
+    pd_c_rt_severe = np.random.normal(loc=2400, scale=350, size=n_pd_severe)
+    pd_i_rt_severe = pd_c_rt_severe + np.random.normal(loc=600, scale=200, size=n_pd_severe)
+    pd_err_severe = np.random.normal(loc=0.18, scale=0.09, size=n_pd_severe)
+
+    pd_c_rt = np.concatenate([pd_c_rt_mild, pd_c_rt_severe])
+    pd_i_rt = np.concatenate([pd_i_rt_mild, pd_i_rt_severe])
+    pd_err = np.clip(np.concatenate([pd_err_mild, pd_err_severe]), 0.0, 1.0)
     
     pd_data = pd.DataFrame({
         'congruent_rt_mean': pd_c_rt,
@@ -57,18 +83,22 @@ def generate_synthetic_stroop_data(n_samples=2000):
     df = pd.concat([hc_data, pd_data], ignore_index=True)
     df = df.sample(frac=1, random_state=42).reset_index(drop=True)
     
-    # Add some noise to make it realistic
-    df['congruent_rt_mean'] += np.random.normal(0, 20, size=n_samples)
-    df['incongruent_rt_mean'] += np.random.normal(0, 30, size=n_samples)
-    df.loc[df['congruent_rt_mean'] < 200, 'congruent_rt_mean'] = 200 # Set minimum RT
+    # Add non-linear noise
+    df['congruent_rt_mean'] += np.random.laplace(0, 15, size=n_samples)
+    df['incongruent_rt_mean'] += np.random.laplace(0, 25, size=n_samples)
+    
+    # Bound constraints
+    df.loc[df['congruent_rt_mean'] < 200, 'congruent_rt_mean'] = 200
     df.loc[df['incongruent_rt_mean'] < 250, 'incongruent_rt_mean'] = 250
+    
+    # Recalculate true Stroop effect after noise
     df['stroop_effect'] = df['incongruent_rt_mean'] - df['congruent_rt_mean']
     
     return df
 
 def train():
-    print("Generating synthetic Stroop cognitive dataset...")
-    df = generate_synthetic_stroop_data(2000)
+    print("Generating high-fidelity synthetic Stroop cognitive dataset (100,000 samples)...")
+    df = generate_synthetic_stroop_data(100000)
     
     features = ['congruent_rt_mean', 'incongruent_rt_mean', 'stroop_effect', 'error_rate']
     X = df[features]
@@ -79,24 +109,48 @@ def train():
     
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=42, stratify=y)
     
-    # Balance training data with SMOTE
     print("Applying SMOTE to balance classes for training...")
     smote = SMOTE(random_state=42)
     X_train_res, y_train_res = smote.fit_resample(X_train, y_train)
     print(f"Resampled training distribution:\n{y_train_res.value_counts()}")
     
-    # Train robust Random Forest
-    rf = RandomForestClassifier(n_estimators=100, max_depth=5, min_samples_split=10, random_state=42, n_jobs=-1)
+    # Setup XGBoost and Hyperparameter Grid
+    print("Beginning XGBoost Hyperparameter Tuning...")
+    xgb_base = xgb.XGBClassifier(
+        objective='binary:logistic',
+        eval_metric='auc',
+        random_state=42,
+        n_jobs=-1
+    )
+
+    param_grid = {
+        'max_depth': [4, 6],
+        'learning_rate': [0.05, 0.1],
+        'n_estimators': [100, 200],
+        'subsample': [0.8, 1.0],
+    }
+
+    grid_search = GridSearchCV(
+        estimator=xgb_base,
+        param_grid=param_grid,
+        scoring='roc_auc',
+        cv=3,
+        n_jobs=-1,
+        verbose=1
+    )
+
+    grid_search.fit(X_train_res, y_train_res)
+    best_xgb = grid_search.best_estimator_
+    print(f"Best XGBoost Params: {grid_search.best_params_}")
     
-    # Calibrate probabilities (Isotonic since we have enough data and want well-calibrated risk scores)
-    calibrated_rf = CalibratedClassifierCV(rf, method='isotonic', cv=5)
-    
-    print("Training calibrated model...")
-    calibrated_rf.fit(X_train_res, y_train_res)
+    # Calibrate probabilities (Isotonic for well-calibrated risk scores)
+    print("Training isotonic probability calibrator on best XGBoost model...")
+    calibrated_xgb = CalibratedClassifierCV(best_xgb, method='isotonic', cv=5)
+    calibrated_xgb.fit(X_train_res, y_train_res)
     
     # Evaluate
-    y_pred = calibrated_rf.predict(X_test)
-    y_proba = calibrated_rf.predict_proba(X_test)[:, 1]
+    y_pred = calibrated_xgb.predict(X_test)
+    y_proba = calibrated_xgb.predict_proba(X_test)[:, 1]
     
     print("\nEvaluation on Test Set:")
     print(classification_report(y_test, y_pred))
@@ -110,10 +164,10 @@ def train():
     model_path = os.path.join(models_dir, 'cognition_model.joblib')
     features_path = os.path.join(models_dir, 'cognition_features.joblib')
     
-    joblib.dump(calibrated_rf, model_path)
+    joblib.dump(calibrated_xgb, model_path)
     joblib.dump(features, features_path)
     
-    print(f"\nSaved model to {model_path}")
+    print(f"\nSaved best model to {model_path}")
     print(f"Saved features list to {features_path}")
 
 if __name__ == '__main__':
