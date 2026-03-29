@@ -52,16 +52,19 @@ def _print_metrics(y_te, y_pred, y_proba=None):
 
 
 def _build_ensemble(seed=42) -> VotingClassifier:
-    """Soft-voting ensemble: RF + GBM + SVM. Better than any single model."""
+    """Soft-voting ensemble: RF + GBM + XGB + SVM."""
+    from xgboost import XGBClassifier
     rf  = RandomForestClassifier(n_estimators=300, class_weight='balanced',
                                   max_depth=None, min_samples_split=3,
                                   random_state=seed, n_jobs=-1)
     gbm = GradientBoostingClassifier(n_estimators=200, learning_rate=0.05,
                                       max_depth=4, subsample=0.8,
                                       random_state=seed)
+    xgb = XGBClassifier(n_estimators=200, learning_rate=0.05, max_depth=4,
+                        subsample=0.8, eval_metric='logloss', random_state=seed)
     svm = SVC(kernel='rbf', C=10, gamma='scale', probability=True,
               class_weight='balanced', random_state=seed)
-    return VotingClassifier(estimators=[('rf', rf), ('gbm', gbm), ('svm', svm)],
+    return VotingClassifier(estimators=[('rf', rf), ('gbm', gbm), ('xgb', xgb), ('svm', svm)],
                             voting='soft')
 
 
@@ -147,8 +150,8 @@ def train_voice_model():
 
     X_tr, X_te, y_tr, y_te = train_test_split(X, y, test_size=0.2, stratify=y, random_state=42)
 
-    # SMOTE + ensemble
-    model = _smote_pipeline(_build_ensemble())
+    # SMOTE + calibrated ensemble
+    model = _smote_pipeline(_calibrated_ensemble())
     model.fit(X_tr, y_tr)
     y_pred = model.predict(X_te)
     y_proba = model.predict_proba(X_te)[:, 1]

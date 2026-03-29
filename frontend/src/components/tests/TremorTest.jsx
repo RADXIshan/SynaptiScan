@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Video, ArrowLeft, Camera, CheckCircle, Play } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { ingestionApi } from '../../services/api';
-
+import { FilesetResolver, HandLandmarker, DrawingUtils } from '@mediapipe/tasks-vision';
 export default function TremorTest() {
   const [step, setStep] = useState('demo');
   const [isRecording, setIsRecording] = useState(false);
@@ -12,7 +12,10 @@ export default function TremorTest() {
   const [stream, setStream] = useState(null);
   
   const videoRef = useRef(null);
+  const canvasRef = useRef(null);
   const mediaRecorderRef = useRef(null);
+  const handLandmarkerRef = useRef(null);
+  const animationFrameRef = useRef(null);
   const videoChunksRef = useRef([]);
   const navigate = useNavigate();
 
@@ -32,8 +35,71 @@ export default function TremorTest() {
   };
 
   useEffect(() => {
+    let active = true;
+    (async () => {
+      try {
+        const vision = await FilesetResolver.forVisionTasks(
+          "https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@latest/wasm"
+        );
+        if (!active) return;
+        const handLandmarker = await HandLandmarker.createFromOptions(vision, {
+          baseOptions: {
+            modelAssetPath: `https://storage.googleapis.com/mediapipe-models/hand_landmarker/hand_landmarker/float16/1/hand_landmarker.task`,
+            delegate: "GPU"
+          },
+          runningMode: "VIDEO",
+          numHands: 2
+        });
+        if (!active) return;
+        handLandmarkerRef.current = handLandmarker;
+      } catch (e) {
+        console.error("Failed to load hand landmarker", e);
+      }
+    })();
+    return () => { active = false; };
+  }, []);
+
+  useEffect(() => {
     if (step === 'test' && stream && videoRef.current) {
        videoRef.current.srcObject = stream;
+
+       const video = videoRef.current;
+       const canvas = canvasRef.current;
+       const ctx = canvas ? canvas.getContext("2d") : null;
+       let drawingUtils = null;
+       if (ctx) drawingUtils = new DrawingUtils(ctx);
+
+       const predictWebcam = () => {
+         if (video.readyState >= 2 && handLandmarkerRef.current && canvas && ctx) {
+            canvas.width = video.videoWidth;
+            canvas.height = video.videoHeight;
+            const startTimeMs = performance.now();
+            const results = handLandmarkerRef.current.detectForVideo(video, startTimeMs);
+
+            ctx.save();
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            if (results.landmarks) {
+              for (const landmarks of results.landmarks) {
+                drawingUtils.drawConnectors(landmarks, HandLandmarker.HAND_CONNECTIONS, {
+                  color: "#00FF00",
+                  lineWidth: 3
+                });
+                drawingUtils.drawLandmarks(landmarks, { color: "#FF0000", lineWidth: 1, radius: 2 });
+              }
+            }
+            ctx.restore();
+         }
+         animationFrameRef.current = requestAnimationFrame(predictWebcam);
+       };
+
+       video.addEventListener("loadeddata", predictWebcam);
+       
+       return () => {
+           video.removeEventListener("loadeddata", predictWebcam);
+           if (animationFrameRef.current) {
+               cancelAnimationFrame(animationFrameRef.current);
+           }
+       };
     }
   }, [step, stream]);
 
@@ -181,6 +247,10 @@ export default function TremorTest() {
                 playsInline
                 muted
                 className={`absolute inset-0 w-full h-full object-cover ${stream ? 'opacity-100' : 'opacity-0'} transition-opacity duration-500`}
+              />
+              <canvas
+                ref={canvasRef}
+                className="absolute inset-0 w-full h-full object-cover pointer-events-none z-10"
               />
               {!stream && (
                 <div className="absolute inset-0 flex items-center justify-center opacity-20">
