@@ -30,15 +30,15 @@ def generate_synthetic_stroop_data(n_samples=100000):
 
     # Sub-population 1: Young/Fast healthy (50% of healthy)
     n_hc_fast = int(n_hc * 0.5)
-    hc_c_rt_fast = np.random.normal(loc=1100, scale=150, size=n_hc_fast)
-    hc_i_rt_fast = hc_c_rt_fast + np.random.normal(loc=150, scale=50, size=n_hc_fast)
-    hc_err_fast = np.random.normal(loc=0.05, scale=0.04, size=n_hc_fast)
+    hc_c_rt_fast = np.random.normal(loc=1150, scale=180, size=n_hc_fast)
+    hc_i_rt_fast = hc_c_rt_fast + np.random.normal(loc=170, scale=60, size=n_hc_fast)
+    hc_err_fast = np.random.normal(loc=0.06, scale=0.05, size=n_hc_fast)
 
     # Sub-population 2: Older/Slower healthy (50% of healthy)
     n_hc_slow = n_hc - n_hc_fast
-    hc_c_rt_slow = np.random.normal(loc=1400, scale=200, size=n_hc_slow)
-    hc_i_rt_slow = hc_c_rt_slow + np.random.normal(loc=200, scale=60, size=n_hc_slow)
-    hc_err_slow = np.random.normal(loc=0.08, scale=0.05, size=n_hc_slow)
+    hc_c_rt_slow = np.random.normal(loc=1450, scale=220, size=n_hc_slow)
+    hc_i_rt_slow = hc_c_rt_slow + np.random.normal(loc=220, scale=70, size=n_hc_slow)
+    hc_err_slow = np.random.normal(loc=0.10, scale=0.07, size=n_hc_slow)
 
     hc_c_rt = np.concatenate([hc_c_rt_fast, hc_c_rt_slow])
     hc_i_rt = np.concatenate([hc_i_rt_fast, hc_i_rt_slow])
@@ -57,15 +57,15 @@ def generate_synthetic_stroop_data(n_samples=100000):
     
     # Sub-population 1: Mild impairment (60% of impaired) - highly overlapping with slow healthies
     n_pd_mild = int(n_pd * 0.6)
-    pd_c_rt_mild = np.random.normal(loc=1800, scale=250, size=n_pd_mild)
-    pd_i_rt_mild = pd_c_rt_mild + np.random.normal(loc=350, scale=100, size=n_pd_mild)
-    pd_err_mild = np.random.normal(loc=0.20, scale=0.08, size=n_pd_mild)
+    pd_c_rt_mild = np.random.normal(loc=1750, scale=280, size=n_pd_mild)
+    pd_i_rt_mild = pd_c_rt_mild + np.random.normal(loc=320, scale=120, size=n_pd_mild)
+    pd_err_mild = np.random.normal(loc=0.18, scale=0.09, size=n_pd_mild)
 
     # Sub-population 2: Severe impairment (40% of impaired)
     n_pd_severe = n_pd - n_pd_mild
-    pd_c_rt_severe = np.random.normal(loc=2400, scale=350, size=n_pd_severe)
-    pd_i_rt_severe = pd_c_rt_severe + np.random.normal(loc=600, scale=200, size=n_pd_severe)
-    pd_err_severe = np.random.normal(loc=0.35, scale=0.12, size=n_pd_severe)
+    pd_c_rt_severe = np.random.normal(loc=2200, scale=380, size=n_pd_severe)
+    pd_i_rt_severe = pd_c_rt_severe + np.random.normal(loc=550, scale=220, size=n_pd_severe)
+    pd_err_severe = np.random.normal(loc=0.32, scale=0.14, size=n_pd_severe)
 
     pd_c_rt = np.concatenate([pd_c_rt_mild, pd_c_rt_severe])
     pd_i_rt = np.concatenate([pd_i_rt_mild, pd_i_rt_severe])

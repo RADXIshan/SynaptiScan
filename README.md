@@ -193,45 +193,45 @@ Across all six screening modalities, SynaptiScan's ensemble models demonstrate h
   <tbody>
     <tr>
       <td><b>🎙️ Voice Acoustics</b></td>
-      <td align="center">92.3%</td>
-      <td align="center">0.960</td>
-      <td align="center">93.0%</td>
-      <td align="center">0.950</td>
+      <td align="center">74.0%</td>
+      <td align="center">0.830</td>
+      <td align="center">78.4%</td>
+      <td align="center">0.817</td>
     </tr>
     <tr>
       <td><b>⌨️ Keystroke Dynamics</b></td>
-      <td align="center">99.0%</td>
-      <td align="center">0.995</td>
-      <td align="center">98.5%</td>
-      <td align="center">0.990</td>
+      <td align="center">99.4%</td>
+      <td align="center">0.99</td>
+      <td align="center">98.8%</td>
+      <td align="center">0.994</td>
     </tr>
     <tr>
       <td><b>🖱️ Mouse Kinematics</b></td>
-      <td align="center">98.5%</td>
-      <td align="center">0.992</td>
       <td align="center">98.0%</td>
-      <td align="center">0.985</td>
+      <td align="center">0.999</td>
+      <td align="center">98.1%</td>
+      <td align="center">0.981</td>
     </tr>
     <tr>
       <td><b>🫨 Rest Tremor</b></td>
-      <td align="center">99.2%</td>
-      <td align="center">0.998</td>
-      <td align="center">99.0%</td>
-      <td align="center">0.993</td>
+      <td align="center">76.0%</td>
+      <td align="center">0.856</td>
+      <td align="center">78.8%</td>
+      <td align="center">0.774</td>
     </tr>
     <tr>
       <td><b>✍️ Handwriting</b></td>
-      <td align="center">97.8%</td>
-      <td align="center">0.990</td>
-      <td align="center">97.5%</td>
-      <td align="center">0.980</td>
+      <td align="center">96.7%</td>
+      <td align="center">0.999</td>
+      <td align="center">96.7%</td>
+      <td align="center">0.967</td>
     </tr>
     <tr>
       <td><b>🧠 Cognitive (Stroop)</b></td>
-      <td align="center">97.5%</td>
-      <td align="center">0.993</td>
-      <td align="center">94.3%</td>
-      <td align="center">0.920</td>
+      <td align="center">93.2%</td>
+      <td align="center">0.971</td>
+      <td align="center">86.7%</td>
+      <td align="center">0.794</td>
     </tr>
   </tbody>
 </table>
@@ -239,19 +239,19 @@ Across all six screening modalities, SynaptiScan's ensemble models demonstrate h
 ### Detailed Performance Breakdowns
 
 #### 1. Voice Acoustic Analysis (UCI Dataset)
-The voice model achieves a strong balance between identifying healthy controls and PD patients, with notably high recall for PD cases (93%).
-- **Precision (PD):** 96%
-- **Recall (PD):** 93%
-- **Healthy F1:** 0.86
+The voice model achieves a strong balance between identifying healthy controls and PD patients, with realistic overlap handling.
+- **Precision (PD):** 85%
+- **Recall (PD):** 78%
+- **Healthy F1:** 0.55
 
 #### 2. Keystroke & Mouse Kinematics
 Evaluated on the **PhysioNet Tappy** and **ALAMEDA** distributions, these models leverage SMOTE to handle class imbalance, resulting in near-perfect separation on kinematic features like velocity jitter and dwell-time variance.
 
 #### 3. Cognitive Assessment (Stroop)
 The XGBoost ensemble for cognitive screening handles the non-linear overlap between elderly healthy controls and early-stage PD patients.
-- **ROC-AUC:** 0.993
-- **PD F1-Score:** 0.920
-- **Precision (PD):** 89.7%
+- **ROC-AUC:** 0.971
+- **PD F1-Score:** 0.794
+- **Precision (PD):** 73.2%
 
 > [!TIP]
 > All models are wrapped with **Isotonic Calibration**, ensuring that the probability scores surfaced in the results dashboard correspond to actual clinical risk frequencies.

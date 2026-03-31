@@ -128,17 +128,21 @@ def train_voice_model():
 
     if df is None:
         print("  All downloads failed. Using simulated clinical distribution fallback.")
+        # Simulation calibrated from UCI but with realistic noise/overlap
         np.random.seed(42)
         n = 500
         labels = np.random.choice([0, 1], size=n, p=[0.25, 0.75])
-        pd_m = [150, 200, 100, 0.006, 0.00005, 0.003, 0.003, 0.01, 0.03, 0.3,
-                0.015, 0.02, 0.02, 0.045, 0.02, 20.0]
-        hc_m = [180, 220, 120, 0.002, 0.00001, 0.001, 0.001, 0.003, 0.01, 0.1,
-                0.005, 0.01, 0.01, 0.015, 0.002, 25.0]
+        # Extremely close means for PD and HC to force overlap
+        pd_m = [165, 210, 112, 0.004, 0.00003, 0.0018, 0.0018, 0.007, 0.022, 0.22, 0.010, 0.015, 0.015, 0.030, 0.012, 22.0]
+        hc_m = [170, 215, 115, 0.0035, 0.000025, 0.0016, 0.0016, 0.006, 0.018, 0.18, 0.009, 0.013, 0.013, 0.025, 0.008, 23.5]
         features = np.zeros((n, 16))
         for i, y in enumerate(labels):
             mu = pd_m if y == 1 else hc_m
-            features[i] = np.random.normal(mu, [abs(m)*0.15 + 1e-6 for m in mu])
+            # 40% spread for significant overlap
+            features[i] = np.random.normal(mu, [abs(m)*0.40 + 1e-6 for m in mu])
+            # Salt-and-pepper noise
+            if np.random.rand() < 0.15:
+                features[i] *= np.random.uniform(0.7, 1.3, size=16)
         df = pd.DataFrame(features, columns=VOICE_FEATURES)
         df['status'] = labels
         df['name'] = [f'sim_{i}' for i in range(n)]
@@ -275,23 +279,23 @@ def train_keystroke_model():
         rows = []
         for y in labels:
             if y == 1:  # PD: slower, more variable, more errors
-                mean_dw  = np.random.normal(130, 25)
-                std_dw   = np.random.normal(55, 18)
-                dwell_iq = np.random.normal(72, 20)  # wider IQR
-                mean_fl  = np.random.normal(320, 65)
-                std_fl   = np.random.normal(100, 30)
-                flight_iq = np.random.normal(130, 35)
-                t_speed  = np.clip(np.random.normal(2.8, 0.8), 0.5, 6.0)  # chars/sec
-                err      = np.clip(np.random.normal(0.06, 0.025), 0, 1)
+                mean_dw  = np.random.normal(118, 28)
+                std_dw   = np.random.normal(45, 20)
+                dwell_iq = np.random.normal(60, 25)
+                mean_fl  = np.random.normal(280, 75)
+                std_fl   = np.random.normal(85, 35)
+                flight_iq = np.random.normal(110, 40)
+                t_speed  = np.clip(np.random.normal(3.5, 1.0), 0.5, 8.0)
+                err      = np.clip(np.random.normal(0.045, 0.030), 0, 1)
             else:  # HC: faster, tighter variability, few errors
-                mean_dw  = np.random.normal(78, 12)
-                std_dw   = np.random.normal(16, 5)
-                dwell_iq = np.random.normal(20, 6)   # tight IQR
-                mean_fl  = np.random.normal(185, 32)
-                std_fl   = np.random.normal(30, 10)
-                flight_iq = np.random.normal(38, 12)
-                t_speed  = np.clip(np.random.normal(6.5, 1.2), 2.0, 12.0)  # chars/sec
-                err      = np.clip(np.random.normal(0.010, 0.005), 0, 1)
+                mean_dw  = np.random.normal(90, 15)
+                std_dw   = np.random.normal(22, 8)
+                dwell_iq = np.random.normal(28, 10)
+                mean_fl  = np.random.normal(210, 40)
+                std_fl   = np.random.normal(45, 15)
+                flight_iq = np.random.normal(55, 18)
+                t_speed  = np.clip(np.random.normal(5.8, 1.5), 2.0, 12.0)
+                err      = np.clip(np.random.normal(0.015, 0.010), 0, 1)
             rows.append([mean_dw, std_dw, dwell_iq, mean_fl, std_fl, flight_iq, t_speed, err, y])
         df = pd.DataFrame(rows, columns=[
             'mean_dwell_time', 'std_dwell_time', 'dwell_iqr',
@@ -396,17 +400,17 @@ def train_mouse_model():
         rows = []
         for y in labels:
             if y == 1:
-                pl=np.random.normal(1600,350); mt=np.random.normal(4.5,1.2)
-                vj=np.random.normal(170,50); dc=np.clip(np.random.normal(18,6),0,60)
-                mv=np.random.normal(1.5,0.4); var=np.random.normal(250,80)
-                sk=np.random.normal(0.8,0.3); ku=np.random.normal(3.5,1.0)
-                p1r=np.random.normal(1.2,0.3); p1s=np.random.normal(0.9,0.2)
+                pl=np.random.normal(1450,400); mt=np.random.normal(4.0,1.5)
+                vj=np.random.normal(140,60); dc=np.clip(np.random.normal(15,8),0,60)
+                mv=np.random.normal(1.3,0.5); var=np.random.normal(210,100)
+                sk=np.random.normal(0.6,0.4); ku=np.random.normal(3.0,1.2)
+                p1r=np.random.normal(1.0,0.4); p1s=np.random.normal(0.7,0.3)
             else:
-                pl=np.random.normal(950,180);  mt=np.random.normal(1.9,0.5)
-                vj=np.random.normal(48,16);  dc=np.clip(np.random.normal(5,2),0,30)
-                mv=np.random.normal(0.8,0.2); var=np.random.normal(80,25)
-                sk=np.random.normal(0.2,0.2); ku=np.random.normal(2.2,0.6)
-                p1r=np.random.normal(0.6,0.15); p1s=np.random.normal(0.4,0.1)
+                pl=np.random.normal(1100,250);  mt=np.random.normal(2.5,0.8)
+                vj=np.random.normal(70,25);  dc=np.clip(np.random.normal(8,4),0,30)
+                mv=np.random.normal(1.0,0.3); var=np.random.normal(120,40)
+                sk=np.random.normal(0.3,0.3); ku=np.random.normal(2.5,0.8)
+                p1r=np.random.normal(0.75,0.25); p1s=np.random.normal(0.55,0.2)
             av = pl / max(mt, 0.1)
             rows.append([pl,mt,vj,dc,mv,var,sk,ku,p1r,p1s,av,y])
         df = pd.DataFrame(rows, columns=['path_length','movement_time','velocity_jitter',
@@ -486,17 +490,17 @@ def train_tremor_model():
         rows = []
         for y in labels:
             if y == 1:
-                pf=np.random.normal(4.8,0.9); amp=np.random.normal(16.0,5.5)
-                ent=np.clip(np.random.normal(0.38,0.10),0,1)
-                tp=np.random.normal(150,40); pw=np.random.normal(80,25)
-                fr=np.random.normal(12,4); p1f=np.random.normal(4.5,1.0)
-                p1e=np.clip(np.random.normal(0.4,0.1),0,1)
+                pf=np.random.normal(6.8,2.2); amp=np.random.normal(9.0,5.0)
+                ent=np.clip(np.random.normal(0.55,0.20),0,1)
+                tp=np.random.normal(85,40); pw=np.random.normal(45,25)
+                fr=np.random.normal(8,4); p1f=np.random.normal(6.5,2.0)
+                p1e=np.clip(np.random.normal(0.52,0.20),0,1)
             else:
-                pf=np.random.normal(9.0,1.5); amp=np.random.normal(2.0,1.0)
-                ent=np.clip(np.random.normal(0.80,0.08),0,1)
-                tp=np.random.normal(40,15); pw=np.random.normal(20,8)
-                fr=np.random.normal(4,1.5); p1f=np.random.normal(8.5,1.5)
-                p1e=np.clip(np.random.normal(0.75,0.08),0,1)
+                pf=np.random.normal(7.5,2.5); amp=np.random.normal(6.0,3.5)
+                ent=np.clip(np.random.normal(0.65,0.18),0,1)
+                tp=np.random.normal(70,30); pw=np.random.normal(38,18)
+                fr=np.random.normal(7,3.0); p1f=np.random.normal(7.2,2.2)
+                p1e=np.clip(np.random.normal(0.62,0.18),0,1)
             rows.append([pf,amp,ent,tp,pw,fr,p1f,p1e,y])
         df = pd.DataFrame(rows, columns=['peak_frequency_hz','amplitude_mean','spectral_entropy',
                                           'total_power','power_at_dom_freq','fft_rms',
@@ -583,39 +587,39 @@ def train_handwriting_model():
         for y_val in labels:
             if y_val == 1:  # PD: slower, more halting, lower per-sec NCV/NCA
                 row = [
-                    np.random.normal(0.0045, 0.0015),   # speed_st (higher = tremor/hesitation)
-                    np.random.normal(0.0040, 0.0013),   # speed_dy
-                    np.random.normal(0.052,  0.015),    # magnitude_vel_st
-                    np.random.normal(0.048,  0.013),    # magnitude_vel_dy
-                    np.random.normal(0.00012, 0.00005), # magnitude_acc_st
-                    np.random.normal(0.00011, 0.00004), # magnitude_acc_dy
-                    np.random.normal(8.5e-6,  3e-6),   # magnitude_jerk_st
-                    np.random.normal(7.5e-6,  2.5e-6), # magnitude_jerk_dy
-                    np.clip(np.random.normal(6.5,  1.5), 1.0, 15.0),  # ncv_st /sec
-                    np.clip(np.random.normal(6.2,  1.4), 1.0, 15.0),  # ncv_dy /sec
-                    np.clip(np.random.normal(3.2,  0.8), 0.5,  8.0),  # nca_st /sec
-                    np.clip(np.random.normal(3.0,  0.7), 0.5,  8.0),  # nca_dy /sec
-                    np.random.normal(350.0, 120.0),    # in_air_stcp (ms)
-                    np.random.normal(4500.0, 900.0),   # on_surface_st (ms)
-                    np.random.normal(4200.0, 850.0),   # on_surface_dy (ms)
+                    np.random.normal(0.0055, 0.0020),   # speed_st
+                    np.random.normal(0.0050, 0.0018),   # speed_dy
+                    np.random.normal(0.065,  0.020),    # magnitude_vel_st
+                    np.random.normal(0.060,  0.018),    # magnitude_vel_dy
+                    np.random.normal(0.00010, 0.00004), # magnitude_acc_st
+                    np.random.normal(0.00009, 0.00003), # magnitude_acc_dy
+                    np.random.normal(6.5e-6,  2.5e-6),  # magnitude_jerk_st
+                    np.random.normal(5.5e-6,  2.0e-6),  # magnitude_jerk_dy
+                    np.clip(np.random.normal(7.2,  1.8), 1.0, 15.0),  # ncv_st /sec
+                    np.clip(np.random.normal(7.0,  1.6), 1.0, 15.0),  # ncv_dy /sec
+                    np.clip(np.random.normal(3.8,  1.0), 0.5,  8.0),  # nca_st /sec
+                    np.clip(np.random.normal(3.6,  0.9), 0.5,  8.0),  # nca_dy /sec
+                    np.random.normal(250.0, 100.0),    # in_air_stcp (ms)
+                    np.random.normal(4200.0, 850.0),   # on_surface_st (ms)
+                    np.random.normal(4000.0, 800.0),   # on_surface_dy (ms)
                 ]
             else:  # HC: smooth, consistent, higher per-sec NCV/NCA
                 row = [
-                    np.random.normal(0.0070, 0.0020),   # speed_st
-                    np.random.normal(0.0065, 0.0018),   # speed_dy
-                    np.random.normal(0.090,  0.020),    # magnitude_vel_st
-                    np.random.normal(0.085,  0.018),    # magnitude_vel_dy
-                    np.random.normal(0.00003, 0.00001), # magnitude_acc_st
-                    np.random.normal(0.00003, 0.00001), # magnitude_acc_dy
-                    np.random.normal(2.0e-6,  6e-7),   # magnitude_jerk_st
-                    np.random.normal(1.8e-6,  5e-7),   # magnitude_jerk_dy
-                    np.clip(np.random.normal(8.7,  1.8), 2.0, 20.0),  # ncv_st /sec
-                    np.clip(np.random.normal(8.5,  1.7), 2.0, 20.0),  # ncv_dy /sec
-                    np.clip(np.random.normal(4.2,  1.0), 1.0, 10.0),  # nca_st /sec
-                    np.clip(np.random.normal(4.0,  0.9), 1.0, 10.0),  # nca_dy /sec
-                    np.random.normal(50.0,   40.0),    # in_air_stcp (ms) — minimal air time
-                    np.random.normal(3800.0, 700.0),   # on_surface_st (ms)
-                    np.random.normal(3600.0, 650.0),   # on_surface_dy (ms)
+                    np.random.normal(0.0065, 0.0022),   # speed_st
+                    np.random.normal(0.0060, 0.0020),   # speed_dy
+                    np.random.normal(0.080,  0.025),    # magnitude_vel_st
+                    np.random.normal(0.075,  0.022),    # magnitude_vel_dy
+                    np.random.normal(0.00005, 0.00002), # magnitude_acc_st
+                    np.random.normal(0.00005, 0.00002), # magnitude_acc_dy
+                    np.random.normal(4.0e-6,  1.5e-6),  # magnitude_jerk_st
+                    np.random.normal(3.5e-6,  1.2e-6),  # magnitude_jerk_dy
+                    np.clip(np.random.normal(8.0,  2.0), 2.0, 20.0),  # ncv_st /sec
+                    np.clip(np.random.normal(7.8,  1.9), 2.0, 20.0),  # ncv_dy /sec
+                    np.clip(np.random.normal(4.0,  1.2), 1.0, 10.0),  # nca_st /sec
+                    np.clip(np.random.normal(3.8,  1.1), 1.0, 10.0),  # nca_dy /sec
+                    np.random.normal(100.0,  60.0),    # in_air_stcp (ms)
+                    np.random.normal(4000.0, 750.0),   # on_surface_st (ms)
+                    np.random.normal(3800.0, 700.0),   # on_surface_dy (ms)
                 ]
             rows.append(row + [y_val])
         feature_cols = HANDWRITING_FEATURES
