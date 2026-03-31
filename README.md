@@ -2,6 +2,38 @@
 
 SynaptiScan is a comprehensive, AI-powered screening application designed to analyze biomarkers associated with Parkinson's Disease (PD). It leverages a combination of multiple machine-learning models to evaluate voice acoustics, keystroke dynamics, mouse kinematics, rest tremor characteristics, and handwriting (spiral drawing) patterns to generate a comprehensive risk assessment score.
 
+
+## 📸 Application Screenshots
+
+<details>
+<summary>Click to view screenshots</summary>
+
+<p align="center">
+  <img src="frontend/public/screenshots/landingpag.jpeg" alt="Landing Page" width="45%">
+  &nbsp;
+  <img src="frontend/public/screenshots/dashboard.jpg" alt="Dashboard" width="45%">
+</p>
+<p align="center">
+  <img src="frontend/public/screenshots/healthentrie.jpeg" alt="Health Dashboard" width="45%">
+  &nbsp;
+  <img src="frontend/public/screenshots/cognitivetes.jpeg" alt="Cognitive Test" width="45%">
+</p>
+<p align="center">
+  <img src="frontend/public/screenshots/voicetes.jpeg" alt="Voice Test" width="45%">
+  &nbsp;
+  <img src="frontend/public/screenshots/drawingtes.jpeg" alt="Drawing Test" width="45%">
+</p>
+<p align="center">
+  <img src="frontend/public/screenshots/keytes.jpeg" alt="Keystroke Test" width="45%">
+  &nbsp;
+  <img src="frontend/public/screenshots/mousetes.jpeg" alt="Mouse Test" width="45%">
+</p>
+<p align="center">
+  <img src="frontend/public/screenshots/tremortes.jpeg" alt="Tremor Test" width="45%">
+</p>
+
+</details>
+
 ---
 
 ## 🌟 Key Features
