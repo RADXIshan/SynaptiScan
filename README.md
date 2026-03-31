@@ -8,29 +8,27 @@ SynaptiScan is a comprehensive, AI-powered screening application designed to ana
 <details>
 <summary>Click to view screenshots</summary>
 
-<p align="center">
-  <img src="frontend/public/screenshots/landingpag.jpeg" alt="Landing Page" width="45%">
-  &nbsp;
-  <img src="frontend/public/screenshots/dashboard.jpg" alt="Dashboard" width="45%">
-</p>
-<p align="center">
-  <img src="frontend/public/screenshots/healthentrie.jpeg" alt="Health Dashboard" width="45%">
-  &nbsp;
-  <img src="frontend/public/screenshots/cognitivetes.jpeg" alt="Cognitive Test" width="45%">
-</p>
-<p align="center">
-  <img src="frontend/public/screenshots/voicetes.jpeg" alt="Voice Test" width="45%">
-  &nbsp;
-  <img src="frontend/public/screenshots/drawingtes.jpeg" alt="Drawing Test" width="45%">
-</p>
-<p align="center">
-  <img src="frontend/public/screenshots/keytes.jpeg" alt="Keystroke Test" width="45%">
-  &nbsp;
-  <img src="frontend/public/screenshots/mousetes.jpeg" alt="Mouse Test" width="45%">
-</p>
-<p align="center">
-  <img src="frontend/public/screenshots/tremortes.jpeg" alt="Tremor Test" width="45%">
-</p>
+<table align="center">
+  <tr>
+    <td align="center"><img src="frontend/public/screenshots/landingpag.jpeg" alt="Landing Page" width="100%"><br><b>Landing Page</b></td>
+    <td align="center"><img src="frontend/public/screenshots/dashboard.jpg" alt="Dashboard" width="100%"><br><b>Dashboard</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="frontend/public/screenshots/healthentrie.jpeg" alt="Health Dashboard" width="100%"><br><b>Health Dashboard</b></td>
+    <td align="center"><img src="frontend/public/screenshots/cognitivetes.jpeg" alt="Cognitive Test" width="100%"><br><b>Cognitive Test</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="frontend/public/screenshots/voicetes.jpeg" alt="Voice Test" width="100%"><br><b>Voice Test</b></td>
+    <td align="center"><img src="frontend/public/screenshots/drawingtes.jpeg" alt="Drawing Test" width="100%"><br><b>Drawing Test</b></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="frontend/public/screenshots/keytes.jpeg" alt="Keystroke Test" width="100%"><br><b>Keystroke Test</b></td>
+    <td align="center"><img src="frontend/public/screenshots/mousetes.jpeg" alt="Mouse Test" width="100%"><br><b>Mouse Test</b></td>
+  </tr>
+  <tr>
+    <td align="center" colspan="2"><img src="frontend/public/screenshots/tremortes.jpeg" alt="Tremor Test" width="50%"><br><b>Tremor Test</b></td>
+  </tr>
+</table>
 
 </details>
 
