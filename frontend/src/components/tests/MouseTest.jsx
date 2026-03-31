@@ -8,6 +8,7 @@ export default function MouseTest() {
   const [step, setStep] = useState('demo');
   const [targets, setTargets] = useState([]);
   const [score, setScore] = useState(0);
+  const [misses, setMisses] = useState(0);
   const [loading, setLoading] = useState(false);
   const [trajectory, setTrajectory] = useState([]);
   const testStartTime = useRef(null);
@@ -66,6 +67,12 @@ export default function MouseTest() {
     }]);
   };
 
+  const handleContainerClick = (e) => {
+    if (step === 'test') {
+      setMisses(prev => prev + 1);
+    }
+  };
+
   const completeTest = async () => {
     const duration = testStartTime.current ? (Date.now() - testStartTime.current) : 0;
     
@@ -77,7 +84,8 @@ export default function MouseTest() {
         duration_ms: duration,
         trajectory: trajectory,
         container_width: containerRef.current?.getBoundingClientRect().width || 800,
-        container_height: containerRef.current?.getBoundingClientRect().height || 600
+        container_height: containerRef.current?.getBoundingClientRect().height || 600,
+        misses: misses
       });
       navigate('/test/voice');
     } catch (err) {
@@ -196,6 +204,7 @@ export default function MouseTest() {
           <div 
             ref={containerRef}
             onPointerMove={handlePointerMove}
+            onPointerDown={handleContainerClick}
             className="flex-1 bg-slate-50/50 rounded-2xl border border-slate-200 relative overflow-hidden cursor-crosshair touch-none"
           >
             {targets.map(t => (
@@ -204,7 +213,10 @@ export default function MouseTest() {
                 initial={{ scale: 0, opacity: 0 }}
                 animate={{ scale: 1, opacity: 1 }}
                 exit={{ scale: 0, opacity: 0 }}
-                onPointerDown={() => handleClick(t.id)}
+                onPointerDown={(e) => {
+                  e.stopPropagation();
+                  handleClick(t.id);
+                }}
                 className="absolute w-12 h-12 rounded-full bg-emerald-500 hover:bg-emerald-400 shadow-[0_0_15px_rgba(16,185,129,0.5)] transform -translate-x-1/2 -translate-y-1/2 flex items-center justify-center z-20 outline-none cursor-crosshair"
                 style={{ left: `${t.x}%`, top: `${t.y}%` }}
               >

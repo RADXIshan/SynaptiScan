@@ -97,13 +97,23 @@ async def upload_keystroke(
         
     data = json.loads(payload)
     
-    # Extract features if raw keystrokes are provided
     raw_strokes = data.get('keystrokes', [])
     if raw_strokes and isinstance(raw_strokes, list):
         from ..ml.features import extract_keystroke_features
         key_features = extract_keystroke_features(raw_strokes)
         data.update(key_features)
         
+    expected_text = data.get('expectedText', '')
+    actual_text = data.get('text', '')
+    
+    if expected_text and actual_text:
+        import difflib
+        ratio = difflib.SequenceMatcher(None, expected_text, actual_text).ratio()
+        text_error_rate = 1.0 - ratio
+        data['error_rate'] = max(data.get('error_rate', 0.0), text_error_rate)
+    elif expected_text and not actual_text:
+        data['error_rate'] = 1.0
+
     score, uncertainty = evaluate_keystroke(data)
     
     result = models.ModalityResult(
@@ -141,6 +151,11 @@ async def upload_mouse(
         data.update(mouse_features)
         
     score, uncertainty = evaluate_mouse(data)
+
+    misses = data.get('misses', 0)
+    if misses > 0:
+        penalty = min(misses * 0.05, 0.40)
+        score = min(score + penalty, 0.90)
 
     result = models.ModalityResult(
         session_id=session_id,

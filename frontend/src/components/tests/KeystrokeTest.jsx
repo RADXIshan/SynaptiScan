@@ -21,6 +21,7 @@ export default function KeystrokeTest() {
       const sessionId = session.id;
       await ingestionApi.uploadKeystroke(sessionId, { 
         text: finalText,
+        expectedText: targetText,
         keystrokes: recordedStrokes
       });
       navigate('/test/mouse');
@@ -204,7 +205,7 @@ export default function KeystrokeTest() {
               </span>
               <button 
                 onClick={() => completeTest(text, keystrokes)}
-                disabled={text !== targetText}
+                disabled={text.length === 0}
                 className="cursor-pointer text-emerald-600 font-medium flex items-center gap-2 hover:text-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
               >
                 Next <ArrowRight size={16} />
