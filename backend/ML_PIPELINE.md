@@ -100,7 +100,36 @@ The primary models are **Soft-Voting Ensembles** (RF + GBM + XGB + SVM).
 
 ---
 
-## 5. Execution Guide
+## 5. Technology Stack & Dependency Reference
+
+The SynaptiScan ML pipeline relies on a curated stack of high-performance libraries for feature extraction, signal processing, and model lifecycle management.
+
+### 5.1 Core Machine Learning
+| Library | Purpose | Key Usage |
+| :--- | :--- | :--- |
+| **scikit-learn** | General ML Framework | Preprocessing (`RobustScaler`), Pipelines, Ensemble Voting, SVM, Random Forest, and Metrics. |
+| **XGBoost** | Gradient Boosting | Primary engine for the **Cognition** model and sub-component of general ensembles. |
+| **imbalanced-learn** | Class Balancing | Implementation of **SMOTE** and **ADASYN** for synthetic over-sampling of minority classes. |
+
+### 5.2 Feature Extraction & Signal Processing
+| Library | Purpose | Key Usage |
+| :--- | :--- | :--- |
+| **MediaPipe** | Computer Vision | HandLandmarker for real-time **Wrist (Landmark 0)** tracking in Tremor analysis. |
+| **Praat (parselmouth)** | Audio Analysis | Extraction of **MDVP** acoustic features (Jitter, Shimmer, NHR, HNR) from voice recordings. |
+| **OpenCV (cv2)** | Video Handling | Frame-by-frame processing of tremor videos before MediaPipe analysis. |
+| **SciPy** | Signal Processing | Detrending, FFT, and spectral entropy calculations for tremor and kinematics. |
+| **imageio-ffmpeg** | Media Conversion | System-independent FFmpeg wrapper used to convert browser `.webm` audio to `.wav`. |
+
+### 5.3 Data Infrastructure & Serialization
+| Library | Purpose | Key Usage |
+| :--- | :--- | :--- |
+| **Joblib** | Model Serialization | Efficient storage and lazy-loading of `.joblib` model and feature artifacts. |
+| **Pandas / NumPy** | Data Manipulation | High-performance dataframe operations and numerical vectorization (FFT, derivatives). |
+| **Requests** | Data Acquisition | Automated downloading of public datasets (UCI, PhysioNet, Zenodo) during training. |
+
+---
+
+## 6. Execution Guide
 
 ### Prerequisites
 - **Python 3.9+**
