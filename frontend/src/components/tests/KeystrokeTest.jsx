@@ -157,10 +157,15 @@ export default function KeystrokeTest() {
             </div>
             
             <textarea
-              className="w-full h-48 bg-white border border-slate-300 focus:border-emerald-500 focus:ring-1 focus:ring-emerald-500 rounded-2xl p-6 text-slate-900 text-lg resize-none transition-all outline-none"
+              className={`w-full h-48 border focus:ring-1 rounded-2xl p-6 text-lg resize-none transition-all outline-none ${
+                text.length > 0 && !targetText.startsWith(text)
+                  ? 'bg-red-50 border-red-300 text-red-900 focus:border-red-500 focus:ring-red-500'
+                  : 'bg-white border-slate-300 text-slate-900 focus:border-emerald-500 focus:ring-emerald-500'
+              }`}
               placeholder="Start typing here..."
               value={text}
               onChange={handleChange}
+              onPaste={(e) => e.preventDefault()}
               spellCheck="false"
             />
             
@@ -170,8 +175,8 @@ export default function KeystrokeTest() {
               </span>
               <button 
                 onClick={() => completeTest(text, keystrokes)}
-                disabled={text.length < 10}
-                className="cursor-pointer text-emerald-600 font-medium flex items-center gap-2 hover:text-emerald-500 disabled:opacity-50 transition-opacity"
+                disabled={text !== targetText}
+                className="cursor-pointer text-emerald-600 font-medium flex items-center gap-2 hover:text-emerald-500 disabled:opacity-50 disabled:cursor-not-allowed transition-opacity"
               >
                 Next <ArrowRight size={16} />
               </button>

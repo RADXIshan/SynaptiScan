@@ -206,8 +206,8 @@ export default function Dashboard() {
               className="glass rounded-3xl p-6 md:p-8 col-span-1 lg:col-span-2 flex flex-col min-w-0 min-h-0 overflow-hidden lg:h-[400px]"
             >
               <h2 className="text-slate-700 font-semibold mb-6 text-xl">Motor Health Index (Trend)</h2>
-              <div className="w-full mt-4 flex-1 min-w-0 min-h-0">
-                <ResponsiveContainer width="100%" height="100%">
+              <div className="w-full mt-4 flex-1 min-w-0 min-h-[300px]">
+                <ResponsiveContainer width="100%" height="100%" minWidth={0} minHeight={0}>
                   <AreaChart data={data.trend}>
                     <defs>
                       <linearGradient id="colorScore" x1="0" y1="0" x2="0" y2="1">

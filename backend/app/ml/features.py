@@ -353,7 +353,8 @@ def extract_voice_features(audio_path: str) -> list:
         # spread1, spread2, D2, PPE (Pitch Period Entropy) proxies
         import scipy.stats as stats
         freq_spectrum = snd.to_spectrum()
-        power = freq_spectrum.get_power_tensor_in_db()
+        values = freq_spectrum.values
+        power = 10 * np.log10(np.abs(values)**2 + 1e-9)
         spread1 = float(np.mean(power) / -10.0) - 5.0 # Typical range -4 to -8
         spread2 = float(np.std(power) / 20.0) + 0.1 # Typical range 0.1 to 0.4
         d2 = 2.0 # Typical range 1.8 to 3.0

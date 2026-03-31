@@ -67,10 +67,11 @@ export default function MouseTest() {
   };
 
   const completeTest = async () => {
+    const duration = testStartTime.current ? (Date.now() - testStartTime.current) : 0;
+    
     setLoading(true);
     try {
       const sessionId = localStorage.getItem('sessionId');
-      const duration = testStartTime.current ? (Date.now() - testStartTime.current) : 0;
       
       await ingestionApi.uploadMouse(sessionId, { 
         duration_ms: duration,

@@ -70,7 +70,7 @@ export default function CognitionTest({ sessionId, onComplete }) {
 
   useEffect(() => {
     if (phase === 'countdown') {
-      if (countdown > 0) {
+      if (countdown >= 0) {
         const timer = setTimeout(() => setCountdown(countdown - 1), 1000);
         return () => clearTimeout(timer);
       } else {
@@ -139,6 +139,16 @@ export default function CognitionTest({ sessionId, onComplete }) {
         const avg_i = scoreData.incongruent_rt.length > 0 
             ? scoreData.incongruent_rt.reduce((a,b) => a+b, 0) / scoreData.incongruent_rt.length 
             : avg_c + 150;
+            
+        // Spam filtering
+        const overall_avg_rt = (avg_c + avg_i) / 2;
+        if (overall_avg_rt < 200 || scoreData.errors > 15) {
+            alert("Results seem anomalous (too fast or too many random errors). This is flagged as spam behavior. Please take the assessment seriously.");
+            setIsSubmitting(false);
+            setPhase('intro');
+            setScoreData({ congruent_rt: [], incongruent_rt: [], errors: 0 });
+            return;
+        }
             
         const payload = {
             congruent_rt_mean: avg_c,
@@ -225,7 +235,11 @@ export default function CognitionTest({ sessionId, onComplete }) {
           initial={{ scale: 0.5, opacity: 0 }}
           animate={{ scale: 1, opacity: 1 }}
           exit={{ scale: 1.5, opacity: 0 }}
-          className="text-8xl font-black text-purple-600"
+          className={`text-8xl font-black ${
+            countdown === 3 ? 'text-red-500' :
+            countdown === 2 ? 'text-yellow-400' :
+            countdown === 1 ? 'text-green-500' : 'text-purple-600'
+          }`}
         >
           {countdown > 0 ? countdown : 'GO!'}
         </motion.div>

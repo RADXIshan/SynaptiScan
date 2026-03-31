@@ -119,8 +119,13 @@ export default function VoiceTest() {
       navigate('/test/tremor');
     } catch (err) {
       console.error(err);
-      alert("Failed to submit data.");
+      if (err.response?.status === 400) {
+        alert("Spam detected or unclear voice. Please try reading the sentence clearly.");
+      } else {
+        alert("Failed to submit data.");
+      }
       setLoading(false);
+      setStep('demo');
     }
   };
 
@@ -140,7 +145,7 @@ export default function VoiceTest() {
           
           <h1 className="text-3xl font-bold text-slate-900 mb-4 relative z-10">Voice Analysis</h1>
           <p className="text-slate-600 max-w-md mx-auto mb-8 text-lg leading-relaxed relative z-10">
-            This test analyzes your vocal characteristics. You will be asked to sustain a sound into your microphone.
+            This test analyzes your vocal characteristics. You will be asked to read a short sentence into your microphone.
           </p>
           
           <div className="p-6 bg-slate-50 rounded-2xl border border-slate-200 mb-10 w-full max-w-md text-left shadow-sm relative z-10">
@@ -158,7 +163,7 @@ export default function VoiceTest() {
               </li>
               <li className="flex items-start gap-2">
                 <span className="w-1.5 h-1.5 rounded-full bg-amber-400 mt-2 shrink-0" />
-                <div>Take a deep breath and say <strong>"Aaahh"</strong> at a steady pitch for 5 seconds.</div>
+                <div>Read this sentence clearly: <strong>"Today is a beautiful day, and the sun is shining."</strong></div>
               </li>
             </ul>
           </div>
@@ -189,7 +194,7 @@ export default function VoiceTest() {
         
         <h1 className="text-3xl font-bold text-slate-900 mb-2 relative z-10">Voice Analysis</h1>
         <p className="text-slate-600 mb-8 max-w-sm mx-auto relative z-10">
-          Take a deep breath and say <strong className="text-slate-900">"Aaahh"</strong> at a steady pitch for 5 seconds.
+          Read this sentence clearly: <br/><strong className="text-slate-900">"Today is a beautiful day, and the sun is shining."</strong>
         </p>
 
         {loading ? (

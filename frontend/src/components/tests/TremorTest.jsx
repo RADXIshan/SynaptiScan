@@ -6,6 +6,7 @@ import { ingestionApi } from '../../services/api';
 import { FilesetResolver, HandLandmarker, DrawingUtils } from '@mediapipe/tasks-vision';
 export default function TremorTest() {
   const [step, setStep] = useState('demo');
+  const [countdown, setCountdown] = useState(null);
   const [isRecording, setIsRecording] = useState(false);
   const [loading, setLoading] = useState(false);
   const [progress, setProgress] = useState(0);
@@ -17,6 +18,7 @@ export default function TremorTest() {
   const handLandmarkerRef = useRef(null);
   const animationFrameRef = useRef(null);
   const videoChunksRef = useRef([]);
+  const hasHandsDetected = useRef(false);
   const navigate = useNavigate();
 
   const requestCamera = async () => {
@@ -78,7 +80,8 @@ export default function TremorTest() {
 
             ctx.save();
             ctx.clearRect(0, 0, canvas.width, canvas.height);
-            if (results.landmarks) {
+            if (results.landmarks && results.landmarks.length > 0) {
+              hasHandsDetected.current = true;
               for (const landmarks of results.landmarks) {
                 drawingUtils.drawConnectors(landmarks, HandLandmarker.HAND_CONNECTIONS, {
                   color: "#00FF00",
@@ -123,8 +126,24 @@ export default function TremorTest() {
 
   const startRecording = () => {
     if (!stream) return;
+    setCountdown(3);
+  };
+
+  useEffect(() => {
+    if (countdown === null) return;
+    if (countdown >= 0) {
+      const timer = setTimeout(() => setCountdown(c => c - 1), 1000);
+      return () => clearTimeout(timer);
+    } else {
+      setCountdown(null);
+      startActualRecording();
+    }
+  }, [countdown]);
+
+  const startActualRecording = () => {
     setIsRecording(true);
     setProgress(0);
+    hasHandsDetected.current = false;
     videoChunksRef.current = [];
     
     mediaRecorderRef.current = new MediaRecorder(stream, { mimeType: 'video/webm' });
@@ -143,7 +162,19 @@ export default function TremorTest() {
       mediaRecorderRef.current.stop();
     }
     setIsRecording(false);
+    
+    // Spam / anomaly check
+    if (!hasHandsDetected.current) {
+      alert("No hands were detected during the recording. Please try again and make sure your hands are visible to the camera.");
+      setStep('demo');
+      setLoading(false);
+      setProgress(0);
+      if (stream) stream.getTracks().forEach(track => track.stop());
+      return;
+    }
+
     setLoading(true);
+
     
     if (stream) {
       stream.getTracks().forEach(track => track.stop());
@@ -257,6 +288,24 @@ export default function TremorTest() {
                   <Camera size={120} className="text-slate-400" />
                 </div>
               )}
+              {countdown !== null && (
+                <div className="absolute inset-0 bg-slate-900/60 z-20 flex flex-col items-center justify-center backdrop-blur-sm">
+                  <h2 className="text-3xl font-medium text-white mb-6 tracking-wide drop-shadow-md">Get Ready...</h2>
+                  <motion.div
+                    key={countdown}
+                    initial={{ scale: 0.5, opacity: 0 }}
+                    animate={{ scale: 1, opacity: 1 }}
+                    exit={{ scale: 1.5, opacity: 0 }}
+                    className={`text-9xl font-black drop-shadow-2xl ${
+                      countdown === 3 ? 'text-red-500' : 
+                      countdown === 2 ? 'text-yellow-400' : 
+                      countdown === 1 ? 'text-green-500' : 'text-white'
+                    }`}
+                  >
+                    {countdown > 0 ? countdown : 'GO!'}
+                  </motion.div>
+                </div>
+              )}
             </div>
 
             {/* Controls card — below the video */}
@@ -269,13 +318,17 @@ export default function TremorTest() {
               </div>
 
               <div className="sm:w-56 shrink-0">
-                {!isRecording ? (
+                {!isRecording && countdown === null ? (
                   <button
                     onClick={startRecording}
                     className="cursor-pointer w-full py-3 bg-rose-600 hover:bg-rose-500 text-white rounded-xl font-medium transition-colors flex justify-center items-center gap-2 shadow-lg shadow-rose-600/20"
                   >
                     <Video size={18} /> Start Recording
                   </button>
+                ) : countdown !== null ? (
+                  <div className="w-full py-3 bg-slate-100 text-slate-500 rounded-xl font-medium flex justify-center items-center gap-2">
+                    Starting in {countdown > 0 ? countdown : 0}...
+                  </div>
                 ) : (
                   <div>
                     <div className="flex justify-between text-xs text-rose-600 font-bold mb-2 uppercase tracking-wider">

@@ -40,6 +40,27 @@ async def upload_voice(
     with open(file_path, "wb") as buffer:
         buffer.write(await file.read())
         
+    # Validation using faster-whisper
+    try:
+        from faster_whisper import WhisperModel
+        # We can instantiate the model here; in a real prod env this would be global/lazy
+        model = WhisperModel("tiny.en", device="cpu", compute_type="int8")
+        segments, info = model.transcribe(file_path, beam_size=5)
+        
+        transcription = " ".join([segment.text for segment in segments]).strip().lower()
+        if not transcription or len(transcription.split()) < 2:
+            raise ValueError("Audio transcription was empty or too short. Possible silence/static.")
+            
+        expected_words = ["today", "beautiful", "day", "sun", "shining"]
+        match_count = sum(1 for word in expected_words if word in transcription)
+        
+        if match_count < 2:
+            raise ValueError("Transcription doesn't match the required sentence.")
+    except Exception as e:
+        import logging
+        logging.error(f"Voice spam detection failed: {str(e)}")
+        raise HTTPException(status_code=400, detail="Voice unintelligible or spam detected. Please read the sentence clearly.")
+        
     from ..ml.features import extract_voice_features
     features_list = extract_voice_features(file_path)
     

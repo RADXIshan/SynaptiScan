@@ -6,6 +6,7 @@ SynaptiScan is a comprehensive, AI-powered screening application designed to ana
 
 ## 🌟 Key Features
 - **Multi-Modal Assessment:** Combines six separate biomarker tests—Voice, Keystroke, Mouse, Tremor, Handwriting, and Cognition.
+- **Robust Anti-Spam & Validation:** Uses intelligent thresholds (e.g., cursor speed, duration) and integrates `faster-whisper` for strict voice evaluation to prevent anomalous or fraudulent test submissions.
 - **Real-Time Biomarker Extraction:** Uses advanced techniques like webcam-based spatial tracking (Mediapipe), audio processing, and fine-motor kinematic tracking via the browser.
 - **Predictive ML Pipelines:** Machine learning models trained on robust clinical datasets utilizing advanced class-balancing (SMOTE) and probabilistic calibrations.
 - **Comprehensive Dashboard:** Interactive data visualization of assessment results using React and Recharts.
@@ -28,10 +29,54 @@ SynaptiScan is a comprehensive, AI-powered screening application designed to ana
 - **Server:** Uvicorn
 - **Database & ORM:** PostgreSQL / SQLite with SQLAlchemy
 - **Authentication:** JWT (JSON Web Tokens) with Passlib & bcrypt
-- **Machine Learning & AI:** Scikit-Learn, XGBoost, PyTorch, Imbalanced-learn
-- **Audio & Signal Processing:** Praat-Parselmouth, Python-Speech-Features
-- **Computer Vision:** OpenCV Headless, MediaPipe (for pose/hand land-marking)
+### **Data Processing & ML**
+- **Machine Learning Algorithms:** Scikit-Learn, XGBoost, PyTorch, Imbalanced-learn (SMOTE)
+- **Audio & Signal Processing:** Praat-Parselmouth (acoustic extraction), Hugging Face Faster-Whisper (speech verification)
+- **Computer Vision & Tracking:** OpenCV Headless, MediaPipe (client-side pose/hand land-marking)
 - **Data Manipulation:** Pandas, NumPy, SciPy
+
+---
+
+## 🏗️ Architecture & Data Flow
+
+The following diagram illustrates the complete end-to-end data pipeline from the moment a user begins a test to when the risk score is surfaced on their dashboard.
+
+```mermaid
+graph TD
+    classDef frontend fill:#3b82f6,stroke:#1d4ed8,stroke-width:2px,color:#fff;
+    classDef backend fill:#10b981,stroke:#047857,stroke-width:2px,color:#fff;
+    classDef model fill:#8b5cf6,stroke:#6d28d9,stroke-width:2px,color:#fff;
+    classDef database fill:#f59e0b,stroke:#b45309,stroke-width:2px,color:#fff;
+    
+    subgraph "Client (Frontend UI)"
+        UI_V[Voice Test]:::frontend
+        UI_K[Keystroke Test]:::frontend
+        UI_M[Mouse Test]:::frontend
+        UI_T[Tremor Test]:::frontend
+        UI_H[Handwriting]:::frontend
+        UI_C[Cognition]:::frontend
+        DASH[Dashboard Overview]:::frontend
+    end
+
+    subgraph "Server (FastAPI Backend)"
+        API[Ingestion API Endpoints]:::backend
+        
+        subgraph Processing [Data Pipeline & ML]
+            SPAM[Anti-Spam Filter <br/> e.g., Whisper, Kinematic limits]:::backend
+            EXTRACT[Feature Extraction Engine <br/> Praat, NumPy, SciPy]:::backend
+            EVAL[ML Prediction Ensembles <br/> RF, XGBoost, SVM]:::model
+        end
+        
+        DB[(PostgreSQL / SQLite <br/> Session Data)]:::database
+    end
+    
+    UI_V & UI_K & UI_M & UI_T & UI_H & UI_C --->|Raw Sensor Data & WebM Blobs| API
+    API --> SPAM
+    SPAM -->|Validated Inputs| EXTRACT
+    EXTRACT -->|Computed Feature Vectors| EVAL
+    EVAL -->|Probabilistic Risk Scores| DB
+    DB -.->|Trend Analysis & Queries| DASH
+```
 
 ---
 
@@ -42,37 +87,60 @@ SynaptiScan relies on six specifically calibrated models to evaluate the user's 
 ### 1. Voice Acoustic Analysis
 Analyzes vocal tremors, phonation stability, and micro-fluctuations in speech.
 - **Dataset:** UCI Parkinson's Disease Dataset (195 recordings).
-- **Extracted Features (22 MDVP features):** Fundamental frequency metrics (Fo, Fhi, Flo), Jitter variants (Abs, RAP, PPQ, DDP), Shimmer variants (APQ3, APQ5, DDA), NHR, HNR, RPDE, DFA, and spread markers.
-- **Algorithm:** SMOTE + Calibrated Ensemble (RF + GBM + XGBoost + SVM).
+- **Extracted Features (22 MDVP Features):** 
+  - *Pitch Metrics:* `MDVP:Fo(Hz)` (Average), `MDVP:Fhi(Hz)` (Maximum), `MDVP:Flo(Hz)` (Minimum)
+  - *Jitter Metrics:* `MDVP:Jitter(%)`, `MDVP:Jitter(Abs)`, `MDVP:RAP`, `MDVP:PPQ`, `Jitter:DDP`
+  - *Shimmer Metrics:* `MDVP:Shimmer`, `MDVP:Shimmer(dB)`, `Shimmer:APQ3`, `Shimmer:APQ5`, `MDVP:APQ`, `Shimmer:DDA`
+  - *Tonal/Noise Ratios:* `NHR` (Noise-to-Harmonics), `HNR` (Harmonics-to-Noise)
+  - *Nonlinear Dynamics:* `RPDE` (Recurrence Period Density Entropy), `DFA` (Detrended Fluctuation Analysis), `spread1`, `spread2`, `D2`, `PPE` (Pitch Period Entropy)
+- **Algorithm:** SMOTE + Calibrated Soft-Voting Ensemble (Random Forest + GBM + XGBoost + SVM).
 
 ### 2. Keystroke Dynamics
 Evaluates typing hesitation, dwell times, and flight times which correlate to bradykinesia and muscle rigidity.
 - **Dataset:** PhysioNet Tappy Dataset (227 participants, ~200MB keystroke log data).
-- **Extracted Features:** Mean/Std/IQR Dwell Time, Mean/Std/IQR Flight Time, Typing Speed (chars/sec), and Error Rate.
-- **Algorithm:** SMOTE + Calibrated Ensemble (RF + GBM + XGBoost + SVM). Outputs are probabilistically corrected to account for general population screening priors (conservative 5% threshold).
+- **Extracted Features (8 Features):** 
+  - `mean_dwell_time`, `std_dwell_time`, `dwell_iqr` (Millisecond durations a key is depressed)
+  - `mean_flight_time`, `std_flight_time`, `flight_iqr` (Millisecond gaps between key releases and subsequent presses)
+  - `typing_speed` (Characters per second)
+  - `error_rate` (Backspace usage ratio)
+- **Algorithm:** SMOTE + Calibrated Ensemble. Outputs are probabilistically corrected via Bayes Theorem to account for general-population screening priors (conservative 5% threshold).
 
 ### 3. Mouse Kinematics
 Measures fine-motor control, velocity jitter, and directional changes via mouse movements.
-- **Dataset:** ALAMEDA Accelerometer Dataset (Mapped continuously to 2D screen tracking).
-- **Extracted Features:** Path length, movement time, average velocity, velocity jitter, direction changes, mean magnitude, variance, skewness, kurtosis, and PC1 RMS/Std.
-- **Algorithm:** SMOTE + Ensemble Predictors (RF + GBM + XGBoost + SVM).
+- **Dataset:** ALAMEDA Accelerometer Dataset (Physiologically mapped continuously to 2D screen tracking).
+- **Extracted Features (11 Features):** 
+  - *Spatial:* `path_length` (Total pixels traversed), `direction_changes` (X/Y velocity zero-crossings)
+  - *Temporal:* `movement_time`, `average_velocity`, `velocity_jitter`
+  - *Kinematic Moments:* `mean_magnitude`, `variance`, `skewness`, `kurtosis`
+  - *PCA Variants:* `pc1_rms`, `pc1_std`
+- **Algorithm:** SMOTE + Ensemble Predictors (Random Forest + GBM + XGBoost + SVM).
 
 ### 4. Rest Tremor Analysis
 Quantifies rest tremors via webcam feed tracking localized hand landmarks.
-- **Dataset:** ALAMEDA Accelerometer Dataset (Translating 3D positional shift into spectral features).
-- **Extracted Features:** Peak frequency (Hz), mean amplitude, raw spectral entropy, total spectral power, power at dominant frequency, FFT RMS, and PCA variants.
-- **Algorithm:** SMOTE + Ensemble Predictors (RF + GBM + XGBoost + SVM).
+- **Dataset:** ALAMEDA Accelerometer Dataset (Translating 3D positional shift into spectral properties).
+- **Extracted Features (8 Custom Frequency-Domain Features):** 
+  - *Frequency Analysis:* `peak_frequency_hz` (Dominant FFT band between 3-12Hz), `spectral_entropy`, `pc1_dom_freq`, `pc1_entropy`
+  - *Power Distribution:* `amplitude_mean` (Signal amplitude), `total_power`, `power_at_dom_freq`, `fft_rms` (Root-mean-square of the FFT spectrum)
+- **Algorithm:** SMOTE + Ensemble Predictors. Uses MediaPipe locally for strict privacy before evaluating frequency derivatives on the backend.
 
 ### 5. Kinematic Handwriting (Spiral/Meander Drawing)
 Assesses micrographia and non-smooth drawing patterns typical of PD patients.
-- **Dataset:** Shubhamjha97 Parkinson's Spirals/Meander kinematic dataset (77 recordings).
-- **Extracted Features (Normalised to per-second rates):** Speed (`_st` and `_dy`), magnitude of velocity/acceleration/jerk, NCV (Number of Changes in Velocity), NCA (Number of Changes in Acceleration), air time, and surface time.
-- **Algorithm:** SMOTE + Isotonically Calibrated Gradient Boosting Classifier (GBM). Adjusts ncv/nca values from dataset recording rates (~100-200 Hz) to expected browser polling rates (~60 Hz).
+- **Dataset:** Shubhamjha97 Parkinson's Spirals/Meander kinematic dataset (77 clinical recordings).
+- **Extracted Features (15 Normalised Rate Features):** 
+  - *Speed & Magnitude:* `speed_st`, `speed_dy`, `magnitude_vel_st`, `magnitude_vel_dy`
+  - *Acceleration & Jerk:* `magnitude_acc_st`, `magnitude_acc_dy`, `magnitude_jerk_st`, `magnitude_jerk_dy`
+  - *Vector Fluctuation:* `ncv_st`, `ncv_dy` (Number of Changes in Velocity), `nca_st`, `nca_dy` (Number of Changes in Acceleration)
+  - *Timings:* `in_air_stcp` (Pen-up time), `on_surface_st`, `on_surface_dy` (Drawing time)
+- **Algorithm:** SMOTE + Isotonically Calibrated Gradient Boosting Classifier (GBM). Adjusts `ncv`/`nca` values from variable dataset rates to standard per-second browser polling rates (~60 Hz).
 
 ### 6. Cognitive Assessment (Stroop Test)
 Evaluates executive dysfunction and delayed reaction times using a web-based Stroop task.
 - **Dataset:** High-fidelity simulated clinical dataset (100,000 algorithmic profiles mapping clinical Gaussian mixtures).
-- **Extracted Features:** Congruent Reaction Time (ms), Incongruent Reaction Time (ms), Stroop Effect (ms delta), and Error Rate.
+- **Extracted Features (4 Features):** 
+  - `congruent_rt_mean` (Average ms latency for matching colors)
+  - `incongruent_rt_mean` (Average ms latency for mismatched text/colors)
+  - `stroop_effect` (Interference delay delta between incongruent and congruent)
+  - `error_rate` (Accuracy of tests)
 - **Algorithm:** SMOTE + Isotonically Calibrated XGBoost Classifier (GridSearch tuned).
 
 ---

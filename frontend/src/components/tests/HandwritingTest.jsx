@@ -73,12 +73,24 @@ export default function HandwritingTest() {
   };
 
   const completeTest = async () => {
+    // Ensure the final stroke is included if just lifted
+    const finalStrokes = currentStroke.length > 0 ? [...strokes, currentStroke] : strokes;
+    const testDurationMs = testStartTime ? (Date.now() - testStartTime) : 0;
+    
+    // Count total points drawn
+    let totalPoints = 0;
+    finalStrokes.forEach(stroke => { totalPoints += stroke.length; });
+
+    // Spam filtering
+    if (testDurationMs < 1000 || totalPoints < 20) {
+      alert("Drawing was too brief or no lines are detected. This appears to be anomaly/spam behavior. Please draw the spiral carefully.");
+      clearCanvas();
+      return;
+    }
+
     setLoading(true);
     try {
       const sessionId = localStorage.getItem('sessionId');
-      // Ensure the final stroke is included if just lifted
-      const finalStrokes = currentStroke.length > 0 ? [...strokes, currentStroke] : strokes;
-      const testDurationMs = testStartTime ? (Date.now() - testStartTime) : 0;
       
       await ingestionApi.uploadHandwriting(sessionId, { 
         strokes: finalStrokes,
