@@ -1,159 +1,87 @@
-# SynaptiScan ML Pipeline — Technical Deep Dive
+# SynaptiScan ML Pipeline — Technical Breakdown
 
-This document provides a comprehensive technical and scientific breakdown of the SynaptiScan machine learning suite. It covers feature engineering, dataset origins, mathematical corrections, and training protocols.
+This document provides a comprehensive technical and scientific breakdown of the SynaptiScan machine learning suite. It is structured to detail explicitly how features are extracted from the frontend, calculated in the backend, modelled, and trained.
 
 ---
 
 ## 1. System Overview & Philosophy
 
-SynaptiScan is designed to bridge the gap between **clinical datasets** (often high-quality but small and imbalanced) and **web-based screening** (noisy sensor data, low-fidelity environments). 
+SynaptiScan bridges the gap between **clinical datasets** (often high-quality but small and imbalanced) and **web-based screening** (noisy sensor data, low-fidelity environments). 
 
-The pipeline is split into three distinct layers:
-1.  **Hardware-Agnostic Extraction**: Converting browser-level noise into physiological proxies (Hz, ms, kinematics).
-2.  **Calibrated Inference**: Using ensemble models with isotonic calibration to ensure risk scores are actual probabilities.
-3.  **Bayesian Prior Correction**: Adjusting clinical models to general screening populations.
+The pipeline handles data natively through a strict three-layer progression:
+1.  **Frontend Preprocessing**: Recording raw input events natively in the browser natively (audio blobs, x-y coordinates, keydown events).
+2.  **Backend Calculation**: Signal processing, numerical derivation, and proxy-mapping hardware events into standardized clinical features.
+3.  **Model Inference & Training**: Using calibrated ensemble pipelines fortified against class imbalance and scaled for outlier detection.
 
 ---
 
-## 2. Feature Engineering & Extraction
+## 2. Feature Extraction, Preprocessing & Model Training Protocols
+
+This section lists the comprehensive flow for each discrete diagnostic model.
 
 ### 2.1 Acoustic Voice Analysis (MDVP)
-We use the **Multi-Dimensional Voice Program (MDVP)** schema, a standard in clinical voice pathology.
+*   **Data Source**: GitHub mirror of the UCI Parkinson's Dataset (195 clinical recordings) mapped to 16 key Multi-Dimensional Voice Program (MDVP) features.
+*   **Frontend Preprocessing**: The user speaks a sustained vowel ("ahhh") into their microphone via the web browser. The frontend captures the raw audio and encodes it into a compressed `.webm` blob. This blob is transferred to the backend.
+*   **Backend Calculation**:
+    *   The backend retrieves the `.webm` file and leverages system-level `FFmpeg` to convert the browser audio stream to the standard, uncompressed clinical format (`.wav`).
+    *   It calculates 16 MDVP features, such as `MDVP:Fo(Hz)` (fundamental frequency/pitch), `MDVP:Jitter(%)`, `MDVP:Shimmer`, `NHR` (noise-to-harmonic ratio), and `HNR` using `parselmouth` (the Python implementation of **Praat**). Preprocessing mandates measuring pitch strictly within a defined 75–600Hz frequency envelope.
+*   **Training Protocol**:
+    *   **Class Balancing:** Raw clinical data is deeply imbalanced towards positive cases (often 75% PD). The pipeline injects **SMOTE** (Synthetic Minority Over-sampling Technique) to algorithmically rebalance the training classes.
+    *   **Architecture:** Features are scaled strictly dynamically using a `RobustScaler` (which is highly resistant to extreme webcam/mic noise) and piped into a Calibrated Soft-Voting Ensemble containing `RandomForest`, `GBM`, `XGBoost`, and `SVM`.
 
-| Feature Category | Description | Significance in Parkinson's |
-| :--- | :--- | :--- |
-| **Fundamental Frequency (Fo)** | The base pitch of the voice. | PD patients often show a restricted pitch range (monotone). |
-| **Jitter (Frequency Perturbation)** | Short-term variability in pitch periods. | Reflects lack of motor control over vocal fold tension. |
-| **Shimmer (Amplitude Perturbation)** | Short-term variability in volume/amplitude. | Indicates instability in the glottal cycle. |
-| **NHR / HNR** | Noise-to-Harmonic / Harmonic-to-Noise Ratio. | PD voices often contain breathiness or "hoarseness" (increased noise). |
+### 2.2 Keystroke Dynamics
+*   **Data Source**: PhysioNet Tappy Dataset (~200 users mapped to 8 macro keystroke variability features).
+*   **Frontend Preprocessing**: A diagnostic web component asks the user to type a short passage. The browser intrinsically tracks typing behavior by capturing exact millisecond timestamps mapped respectively to `keydown` and `keyup` Javascript events.
+*   **Backend Calculation**:
+    *   The backend consumes the raw event timeline to isolate single-key characteristics.
+    *   **Base components**: It calculates **Dwell Time** (`keyup` - `keydown`) and **Flight Time** (gap between a key release and the next key depression).
+    *   **Final Feature Vectors**: Based on Arroyo-Gallego et al. (2017), the backend extracts 8 derived features: `mean_dwell_time`, `std_dwell_time`, `dwell_iqr`, `mean_flight_time`, `std_flight_time`, `flight_iqr` (emphasizing variability over direct speed), overall `typing_speed` (chars/sec), and `error_rate`.
+*   **Training Protocol**: Uses the unified ImbPipeline (RobustScaler → SMOTE) leading into the standard Soft-Voting Ensemble. Output confidence is bound tightly via `CalibratedClassifierCV` (Isotonic mapping) to simulate accurate prior probabilities. 
 
-**Preprocessing**: Audio is converted to WAV using FFmpeg. Extraction is performed via `parselmouth` (Python wrapper for **Praat**), measuring pitch at 75–600Hz as per clinical standards.
-
-### 2.2 Keystroke Dynamics (Arroyo-Gallego Schema)
-Based on the **Arroyo-Gallego et al. (2017)** research on the Tappy dataset.
-
-- **Dwell Time**: Time key is held (`up - down`). PD patients often show elongated and highly variable dwell times.
-- **Flight Time**: Inter-key interval. PD patients show slower, halting flight times.
-- **Dwell/Flight IQR**: The Inter-Quartile Range (IQR) captures the *variability* which is often more diagnostic than the mean in early stages.
-- **Typing Speed**: Normalized characters per second, adjusted for backspaces.
-
-### 2.3 Mouse Trajectory & Accelerometer Proxies
-Since we lack a physical wrist accelerometer, we derive proxies from 2D mouse coordinates using 60Hz browser polling.
-
-- **Kinematic**: Path length, velocity jitter (acceleration bursts), and direction changes (zero-crossing rate of velocity).
-- **ALAMEDA Proxies**: We map velocity to "G-force" proxies (`A_SCALE = 0.001`).
-  - **Skewness/Kurtosis**: Captures the "peakedness" of movement bursts, differentiating smooth HC (Healthy Control) movements from jerky PD movements.
-  - **PC1 RMS**: Principal Component Analysis (PCA) used to find the dominant axis of movement instability.
+### 2.3 Mouse Dynamics & Accelerometer Proxies
+*   **Data Source**: Zenodo ALAMEDA Accelerometer Dataset. Translated functionally into 10 mapped features.
+*   **Frontend Preprocessing**: While completing tasks, a web listener monitors intrinsic `mousemove` events, buffering the `(x, y)` coordinate trail against highly accurate timestamps at a nominal 60Hz browser polling rate.
+*   **Backend Calculation**:
+    *   Since browsers lack dedicated physical accelerometer sensors, the backend synthesizes "G-force" numerical proxies mathematically from the displacement timeline.
+    *   **Derivation**: Calculates vector length per polling slice to establish velocity, and the delta between steps to construct acceleration. A heuristic multiplier (`A_SCALE = 0.001`) normalizes these pixel-based derivations to clinical units.
+    *   **Features Formed**: Extracts 10 robust ALAMEDA metric equivalents including `path_length` (Magnitude_rms proxy), `movement_time`, `velocity_jitter`, `direction_changes`, `skewness` (burst asymmetry), `kurtosis` (kinetic peakedness/jumpiness), and `pc1_rms` / `pc1_std` (identifying dominant instability axes using PCA).
+*   **Training Protocol**: Uses `RobustScaler` coupled with the SMOTE integration and outputs inference via the Soft-Voting Ensemble architecture.
 
 ### 2.4 Vision-Based Tremor (MediaPipe + FFT)
-- **Tracking**: MediaPipe HandLandmarker tracks Landmark 0 (Wrist) in real-time.
-- **Signal Processing**: 
-  1.  **Displacement Vector**: `sqrt(dx² + dy²)` isolated from the wrist landmarker.
-  2.  **Detrending**: Slow drifting (arm movement) is removed via linear detrending.
-  3.  **Spectral Analysis**: Fast Fourier Transform (FFT) generates the power spectrum.
-  4.  **Physiological Bandpass**: Power is isolated strictly within **3Hz - 12Hz**, the band where Parkinsonian rest tremor and postural tremor typically reside.
-- **Features**: Spectral Entropy (randomness of tremor) and Peak Frequency (Hz).
+*   **Data Source**: Zenodo ALAMEDA format (adapted entirely for 8 pure spectral parameters).
+*   **Frontend Preprocessing**: The frontend accesses the user's localized webcam to process live frames via Google's `MediaPipe HandLandmarker` API. It securely flattens the video to purely spatial landmark arrays without streaming sensitive visual data, natively sending the isolated spatial coordinates for **Landmark 0 (the wrist)**.
+*   **Backend Calculation**:
+    *   **Euclidean Displacement**: Converts 2D coordinate deltas to a singular spatial displacement vector `sqrt(dx² + dy²)`.
+    *   **Detrending**: A signal processing layer subtracts slow, linear arm displacement (drifting) in order to strictly isolate high-frequency tremor oscillations.
+    *   **FFT Application**: Runs a Fast Fourier Transform (FFT) sequence over the signal, enforcing a strict **3Hz - 12Hz** physiological bandpass filter (matching the standard clinical signature bounds for Parkinsonian rest-tremor). 
+    *   **Features Formed**: 8 pure spectral outputs including `peak_frequency_hz`, `amplitude_mean`, `spectral_entropy` (randomness/noisiness of movement), and `total_power`.
+*   **Training Protocol**: Trained dynamically against synthetic clinical data bridges via SMOTE and an Isotonic Calibrated Ensemble, providing tremor risk without needing external wearables.
 
-### 2.5 Handwriting & Kinematics (shubhamjha97 Schema)
-Drawings are analyzed using kinematic features derived from the shubhamjha97 dataset.
+### 2.5 Handwriting & Kinematic Tracking
+*   **Data Source**: Shubhamjha97 Kinematic Dataset (77 high-fidelity spiral/meander clinical recordings) expanded securely into 15 dynamic features.
+*   **Frontend Preprocessing**: The React frontend houses an interactive canvas element tracking continuous drawing interactions (touch or mouse). High-resolution spatial vectors `(x, y)` and granular sequence timings (`t`) are continuously retained and transmitted.
+*   **Backend Calculation**:
+    *   Numerical arrays calculate dynamic state metrics using first derivatives for continuous velocity, and second discrete derivatives for localized acceleration and jerk.
+    *   **Normalization Layer**: Converts variables strictly to **Per-Second Intercept Rates**. This isolates logic from hardware desynchronizations (general web canvas 60Hz polling vs. high-fidelity medical stylus 100Hz+ polling). 
+    *   **Features Formed**: Extracts `NCV` (Number of Changes in Velocity—quantifying halting velocity), `NCA` (Number of Changes in Acceleration), state magnitudes, combined with overall drawing speeds.
+*   **Training Protocol**: Runs a Gradient Boosting Classification module (GBM) localized within an ImbPipeline framework using robust-scaling methodologies alongside SMOTE upsampling for dense spatial prediction outputs.
 
-- **NCV (Number of Changes in Velocity)**: Sign changes in the first derivative of velocity.
-- **NCA (Number of Changes in Acceleration)**: Sign changes in the second derivative of velocity.
-- **Normalization**: To ensure device agnosticism (Mouse @ 60Hz vs. Stylus @ 100Hz), NCV and NCA are converted to **Per-Second Rates**.
-- **Scaling (`0.00002`)**: A heuristic constant derived from mapping screen-space pixels/sec to the physical millimeter/sec units found in high-accuracy clinical tablet datasets.
-
----
-
-## 3. Mathematical Corrections (Bayes & Prior)
-
-### 3.1 The Problem: Clinical Prevalance
-Public datasets (UCI, Tappy) are "clinical" — they usually have ~75% PD labels. If used directly, a model will predict ~75% risk for any ambiguous input. This is inappropriate for general screening where prevalence is ~1–2%.
-
-### 3.2 The Solution: Logit-Offset Correction
-In `models.py`, we apply a Bayesian correction to shift the model's "prior" belief.
-
-**The Math**:
-Given a dataset with prevalence $P_{data}$ and a target population with prevalence $P_{target}$:
-$$ \text{logit}_{corrected} = \text{logit}_{raw} + \ln\left(\frac{P_{target}}{1 - P_{target}}\right) - \ln\left(\frac{P_{data}}{1 - P_{data}}\right) $$
-
-**Values used in SynaptiScan**:
-- $P_{target}$ = 0.05 (A conservative 5% screening baseline).
-- $P_{data}$ = 0.75 (Average clinical dataset imbalance).
+### 2.6 Cognitive Test (Stroop Effect)
+*   **Data Source**: Large-scale dynamically generated 100,000-sample dataset synthesizing rigorous clinical Gaussian mixtures (simulating the overlapping properties between cognitive decline cases and slow-healthies).
+*   **Frontend Preprocessing**: A classic digital Stroop matching diagnostic forces users to parse mismatched colors and text. The frontend tracks exact task response accuracy strings alongside rapid decision latencies locally.
+*   **Backend Calculation**:
+    *   Calculates and groups trial-specific means specifically targeting congruent (matching) versus incongruent (mismatching) arrays.
+    *   **Features Formed**: Computes `congruent_rt_mean`, `incongruent_rt_mean`, the derived `stroop_effect` (the explicit scalar offset between incongruent and congruent RT), and total `error_rate`.
+*   **Training Protocol**:
+    *   Leverages highly optimized `XGBoost` trees calibrated by generalized `GridSearchCV` routines finding optimal logloss topologies.
+    *   Data boundaries are managed by SMOTE and the inference scores natively bridged via Isotonic Calibration mapped into risk percentiles.
 
 ---
 
-## 4. Model Training & Optimization
+## 3. Mathematical Base Corrections (Logit & Prev)
 
-### 4.1 Class Balancing (SMOTE)
-Almost all models use **SMOTE (Synthetic Minority Over-sampling Technique)**. Instead of just duplicating healthy samples, SMOTE creates synthetic "bridges" between existing minority samples in high-dimensional feature space, preventing the model from overfitting to specific noise patterns.
+A fundamental challenge working natively with internet-based ML is dealing with Public clinical dataset inflation.
 
-### 4.2 Robust Scaling
-We use `RobustScaler()` instead of `StandardScaler()` for sensor data.
-- **StandardScaler**: Sensitive to outliers (extreme mouse jerks or background noise). 
-- **RobustScaler**: Centers and scales based on the median and Inter-Quartile Range (IQR), making it resilient to the extreme 1% of noisy sensor data.
-
-### 4.3 Model Ensembles
-The primary models are **Soft-Voting Ensembles** (RF + GBM + XGB + SVM).
-- **Random Forest**: Captures broad feature correlations.
-- **Gradient Boosting (GBM/XGB)**: Focuses on hard-to-classify edge cases.
-- **SVM**: Finds optimal linear/non-linear separation boundaries.
-
----
-
-## 5. Technology Stack & Dependency Reference
-
-The SynaptiScan ML pipeline relies on a curated stack of high-performance libraries for feature extraction, signal processing, and model lifecycle management.
-
-### 5.1 Core Machine Learning
-| Library | Purpose | Key Usage |
-| :--- | :--- | :--- |
-| **scikit-learn** | General ML Framework | Preprocessing (`RobustScaler`), Pipelines, Ensemble Voting, SVM, Random Forest, and Metrics. |
-| **XGBoost** | Gradient Boosting | Primary engine for the **Cognition** model and sub-component of general ensembles. |
-| **imbalanced-learn** | Class Balancing | Implementation of **SMOTE** and **ADASYN** for synthetic over-sampling of minority classes. |
-
-### 5.2 Feature Extraction & Signal Processing
-| Library | Purpose | Key Usage |
-| :--- | :--- | :--- |
-| **MediaPipe** | Computer Vision | HandLandmarker for real-time **Wrist (Landmark 0)** tracking in Tremor analysis. |
-| **Praat (parselmouth)** | Audio Analysis | Extraction of **MDVP** acoustic features (Jitter, Shimmer, NHR, HNR) from voice recordings. |
-| **OpenCV (cv2)** | Video Handling | Frame-by-frame processing of tremor videos before MediaPipe analysis. |
-| **SciPy** | Signal Processing | Detrending, FFT, and spectral entropy calculations for tremor and kinematics. |
-| **imageio-ffmpeg** | Media Conversion | System-independent FFmpeg wrapper used to convert browser `.webm` audio to `.wav`. |
-
-### 5.3 Data Infrastructure & Serialization
-| Library | Purpose | Key Usage |
-| :--- | :--- | :--- |
-| **Joblib** | Model Serialization | Efficient storage and lazy-loading of `.joblib` model and feature artifacts. |
-| **Pandas / NumPy** | Data Manipulation | High-performance dataframe operations and numerical vectorization (FFT, derivatives). |
-| **Requests** | Data Acquisition | Automated downloading of public datasets (UCI, PhysioNet, Zenodo) during training. |
-
----
-
-## 6. Execution Guide
-
-### Prerequisites
-- **Python 3.9+**
-- **FFmpeg**: System-level installation required for Voice/Video processing.
-- **MediaPipe**: For hand tracking.
-
-### Training the Models
-To retrain the diagnostic suite, navigate to the `backend` directory and run:
-
-```bash
-# Train the 5 primary sensor models
-python app/ml/training/train_models.py
-
-# Train the cognition/Stroop model
-python app/ml/training/train_cognition.py
-```
-
-### Verification
-Each training script outputs a `classification_report` and `ROC-AUC` score. Features are automatically saved to `saved_models/` as `.joblib` files, which are then lazily loaded by the inference engine in `models.py`.
-
----
-
-## 6. Scientific References
-- **Arroyo-Gallego et al. (2017)**: *Detection of Motor Impairment in Parkinson's Disease via Mobile Touchscreen.*
-- **UCI Machine Learning Repository**: *Parkinson's Disease Data Set (Little et al., 2007).*
-- **Zenodo ALAMEDA**: *PD Tremor Dataset (10782573).*
-- **shubhamjha97**: *Parkinson Detection Kinematic Drawing Features.*
+*   Clinical datasets often possess a prevalence distribution heavily artificially skewed towards disease positives (`P(Target) ≈ 75%`). 
+*   Internet-based screening baseline populations operate dramatically differently (`P(Target) ≈ 1% - 5%`).
+*   To circumvent this problem without losing dataset validity, the SynaptiScan pipeline integrates a **Bayesian Logit Correction Protocol** directly into backend inference engines. The correction actively shifts the model's structural prior based upon the logit offset dynamically scaling predictions out of the clinical space into broad physiological screening parameters seamlessly.
