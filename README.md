@@ -6,7 +6,7 @@ SynaptiScan is a comprehensive, AI-powered screening application designed to ana
 
 ## 🌟 Key Features
 - **Multi-Modal Assessment:** Combines six separate biomarker tests—Voice, Keystroke, Mouse, Tremor, Handwriting, and Cognition.
-- **Robust Anti-Spam & Validation:** Uses intelligent thresholds (e.g., cursor speed, duration) and integrates `faster-whisper` for strict voice evaluation to prevent anomalous or fraudulent test submissions.
+- **Robust Anti-Spam & Validation:** Uses intelligent thresholds (e.g., cursor speed, duration) and integrates `faster-whisper` for strict voice evaluation, along with validation checks across handwriting and cognition tests, to prevent anomalous or fraudulent test submissions.
 - **Real-Time Biomarker Extraction:** Uses advanced techniques like webcam-based spatial tracking (Mediapipe), audio processing, and fine-motor kinematic tracking via the browser.
 - **Predictive ML Pipelines:** Machine learning models trained on robust clinical datasets utilizing advanced class-balancing (SMOTE) and probabilistic calibrations.
 - **Comprehensive Dashboard:** Interactive data visualization of assessment results using React and Recharts.
@@ -87,13 +87,13 @@ SynaptiScan relies on six specifically calibrated models to evaluate the user's 
 ### 1. Voice Acoustic Analysis
 Analyzes vocal tremors, phonation stability, and micro-fluctuations in speech.
 - **Dataset:** UCI Parkinson's Disease Dataset (195 recordings).
-- **Extracted Features (22 MDVP Features):** 
+- **Extracted Features (16 MDVP Features):** 
   - *Pitch Metrics:* `MDVP:Fo(Hz)` (Average), `MDVP:Fhi(Hz)` (Maximum), `MDVP:Flo(Hz)` (Minimum)
   - *Jitter Metrics:* `MDVP:Jitter(%)`, `MDVP:Jitter(Abs)`, `MDVP:RAP`, `MDVP:PPQ`, `Jitter:DDP`
   - *Shimmer Metrics:* `MDVP:Shimmer`, `MDVP:Shimmer(dB)`, `Shimmer:APQ3`, `Shimmer:APQ5`, `MDVP:APQ`, `Shimmer:DDA`
   - *Tonal/Noise Ratios:* `NHR` (Noise-to-Harmonics), `HNR` (Harmonics-to-Noise)
-  - *Nonlinear Dynamics:* `RPDE` (Recurrence Period Density Entropy), `DFA` (Detrended Fluctuation Analysis), `spread1`, `spread2`, `D2`, `PPE` (Pitch Period Entropy)
 - **Algorithm:** SMOTE + Calibrated Soft-Voting Ensemble (Random Forest + GBM + XGBoost + SVM).
+- **Validation:** Utilizes `faster-whisper` for real-time transcription validation to ensure the submitted audio correctly matches the prompted sentence, filtering out unintelligible or spam recordings.
 
 ### 2. Keystroke Dynamics
 Evaluates typing hesitation, dwell times, and flight times which correlate to bradykinesia and muscle rigidity.
@@ -121,7 +121,7 @@ Quantifies rest tremors via webcam feed tracking localized hand landmarks.
 - **Extracted Features (8 Custom Frequency-Domain Features):** 
   - *Frequency Analysis:* `peak_frequency_hz` (Dominant FFT band between 3-12Hz), `spectral_entropy`, `pc1_dom_freq`, `pc1_entropy`
   - *Power Distribution:* `amplitude_mean` (Signal amplitude), `total_power`, `power_at_dom_freq`, `fft_rms` (Root-mean-square of the FFT spectrum)
-- **Algorithm:** SMOTE + Ensemble Predictors. Uses MediaPipe locally for strict privacy before evaluating frequency derivatives on the backend.
+- **Algorithm:** SMOTE + Ensemble Predictors. Integrates MediaPipe Tasks Vision (`hand_landmarker.task`) locally for precise wrist displacement tracking before securely evaluating physiological tremor frequency derivatives on the backend.
 
 ### 5. Kinematic Handwriting (Spiral/Meander Drawing)
 Assesses micrographia and non-smooth drawing patterns typical of PD patients.
@@ -135,13 +135,14 @@ Assesses micrographia and non-smooth drawing patterns typical of PD patients.
 
 ### 6. Cognitive Assessment (Stroop Test)
 Evaluates executive dysfunction and delayed reaction times using a web-based Stroop task.
-- **Dataset:** High-fidelity simulated clinical dataset (100,000 algorithmic profiles mapping clinical Gaussian mixtures).
+- **Dataset:** High-fidelity simulated clinical dataset (100,000 algorithmic profiles mapping clinical Gaussian mixtures mapped to non-linear noise distributions).
 - **Extracted Features (4 Features):** 
   - `congruent_rt_mean` (Average ms latency for matching colors)
   - `incongruent_rt_mean` (Average ms latency for mismatched text/colors)
   - `stroop_effect` (Interference delay delta between incongruent and congruent)
   - `error_rate` (Accuracy of tests)
-- **Algorithm:** SMOTE + Isotonically Calibrated XGBoost Classifier (GridSearch tuned).
+- **Algorithm:** SMOTE + Isotonically Calibrated XGBoost Classifier (tuned via GridSearchCV).
+- **Validation:** Implements bounds constraints and spam detection through accuracy thresholds and minimal response times to invalidate random clicking.
 
 ---
 
