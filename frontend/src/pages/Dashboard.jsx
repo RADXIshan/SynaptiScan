@@ -238,14 +238,18 @@ export default function Dashboard() {
                     </defs>
                     <XAxis dataKey="date" stroke="#cbd5e1" tick={{ fill: '#64748b' }} />
                     <YAxis stroke="#cbd5e1" tick={{ fill: '#64748b' }} domain={[0, 1]} />
-                    {data.baseline_score !== null && (
-                      <ReferenceLine 
-                        y={data.baseline_score} 
-                        stroke="#f43f5e" 
-                        strokeDasharray="4 4" 
-                        label={{ position: 'insideTopLeft', value: 'Baseline', fill: '#f43f5e', fontSize: 12 }} 
-                      />
-                    )}
+                    <ReferenceLine 
+                      y={0.3} 
+                      stroke="#f59e0b" 
+                      strokeDasharray="3 3" 
+                      label={{ position: 'insideBottomRight', value: 'Amber (30%)', fill: '#f59e0b', fontSize: 10, offset: 5 }} 
+                    />
+                    <ReferenceLine 
+                      y={0.6} 
+                      stroke="#e11d48" 
+                      strokeDasharray="3 3" 
+                      label={{ position: 'insideTopRight', value: 'Red (60%)', fill: '#e11d48', fontSize: 10, offset: 5 }} 
+                    />
                     <Tooltip 
                       contentStyle={{ backgroundColor: 'rgba(255,255,255,0.95)', borderColor: '#e2e8f0', borderRadius: '12px', boxShadow: '0 4px 6px -1px rgb(0 0 0 / 0.1)' }}
                       itemStyle={{ color: '#4f46e5' }}
