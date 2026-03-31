@@ -208,7 +208,7 @@ Across all six screening modalities, SynaptiScan's ensemble models demonstrate h
     <tr>
       <td><b>🖱️ Mouse Kinematics</b></td>
       <td align="center">98.0%</td>
-      <td align="center">0.999</td>
+      <td align="center">0.98</td>
       <td align="center">98.1%</td>
       <td align="center">0.981</td>
     </tr>
@@ -222,7 +222,7 @@ Across all six screening modalities, SynaptiScan's ensemble models demonstrate h
     <tr>
       <td><b>✍️ Handwriting</b></td>
       <td align="center">96.7%</td>
-      <td align="center">0.999</td>
+      <td align="center">0.98</td>
       <td align="center">96.7%</td>
       <td align="center">0.967</td>
     </tr>
