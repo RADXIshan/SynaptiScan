@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { Keyboard, MousePointer, Mic, Video, Edit3, ArrowRight, Activity, Download, Plus, BookOpen, Clock, Info, Brain, Sparkles, Trash2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { dashboardApi } from '../services/api';
@@ -19,6 +19,8 @@ export default function Dashboard() {
   const [journalForm, setJournalForm] = useState({ type: 'symptom', content: '', severity: 5 });
   const [isSubmittingJournal, setIsSubmittingJournal] = useState(false);
   const [isExporting, setIsExporting] = useState(false);
+  const [entryToDelete, setEntryToDelete] = useState(null);
+  const [isDeleting, setIsDeleting] = useState(false);
 
   useEffect(() => {
     const fetchDashboardData = async () => {
@@ -124,18 +126,27 @@ export default function Dashboard() {
     }
   };
 
-  const handleDeleteEntry = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this entry?")) return;
+  const handleDeleteEntry = (id) => {
+    setEntryToDelete(id);
+  };
+
+  const confirmDeleteEntry = async () => {
+    if (!entryToDelete) return;
+    setIsDeleting(true);
     try {
-      await dashboardApi.deleteJournalEntry(id);
-      setJournalEntries(journalEntries.filter(entry => entry.id !== id));
+      await dashboardApi.deleteJournalEntry(entryToDelete);
+      setJournalEntries(journalEntries.filter(entry => entry.id !== entryToDelete));
+      setEntryToDelete(null);
     } catch (err) {
       console.error("Failed to delete journal entry", err);
+    } finally {
+      setIsDeleting(false);
     }
   };
 
   return (
-    <div id="dashboard-content" className="space-y-8 animate-fade-in-up pb-12">
+    <>
+      <div id="dashboard-content" className="space-y-8 animate-fade-in-up pb-12">
       <header className="mb-10 flex flex-col md:flex-row md:items-start justify-between gap-4">
         <div>
           <h1 className="text-4xl font-bold tracking-tight text-slate-900 mb-2">Motor Risk Dashboard</h1>
@@ -422,6 +433,52 @@ export default function Dashboard() {
           </div>
         </>
       )}
-    </div>
+      </div>
+
+      <AnimatePresence>
+        {entryToDelete && (
+          <div className="fixed inset-0 z-9999 flex items-center justify-center p-4">
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+              className="absolute inset-0 bg-slate-900/40 backdrop-blur-md"
+              onClick={() => setEntryToDelete(null)}
+            />
+            <motion.div 
+              initial={{ scale: 0.95, opacity: 0, y: 10 }}
+              animate={{ scale: 1, opacity: 1, y: 0 }}
+              exit={{ scale: 0.95, opacity: 0, y: 10 }}
+              transition={{ ease: "easeOut", duration: 0.2 }}
+              className="relative bg-white rounded-3xl p-6 md:p-8 max-w-sm w-full shadow-2xl border border-slate-100"
+            >
+              <div className="flex items-center justify-center w-12 h-12 bg-rose-100 text-rose-600 rounded-full mb-6 mx-auto">
+                <Trash2 size={24} />
+              </div>
+              <h3 className="text-xl font-bold text-slate-900 text-center mb-2">Delete Entry?</h3>
+              <p className="text-slate-500 text-center mb-6 leading-relaxed">
+                Are you sure you want to delete this health entry? This action cannot be undone.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setEntryToDelete(null)}
+                  disabled={isDeleting}
+                  className="flex-1 bg-slate-100 hover:bg-slate-200 text-slate-700 py-3 rounded-xl font-medium transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmDeleteEntry}
+                  disabled={isDeleting}
+                  className="flex-1 bg-rose-600 hover:bg-rose-700 text-white py-3 rounded-xl font-medium transition-colors flex justify-center items-center gap-2"
+                >
+                  {isDeleting ? <Activity size={18} className="animate-spin" /> : 'Delete'}
+                </button>
+              </div>
+            </motion.div>
+          </div>
+        )}
+      </AnimatePresence>
+    </>
   );
 }
