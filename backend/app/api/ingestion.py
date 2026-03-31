@@ -64,8 +64,8 @@ async def upload_voice(
     from ..ml.features import extract_voice_features
     features_list = extract_voice_features(file_path)
     
-    # evaluate_voice accepts either a path or a 22-len array
-    eval_input = features_list if (features_list and len(features_list) == 22) else file_path
+    # evaluate_voice accepts either a path or a 16-len array
+    eval_input = features_list if (features_list and len(features_list) == 16) else file_path
     score, uncertainty = evaluate_voice(eval_input)
     
     result = models.ModalityResult(

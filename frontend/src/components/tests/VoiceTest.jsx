@@ -10,6 +10,7 @@ export default function VoiceTest() {
   const [loading, setLoading] = useState(false);
   const [volume, setVolume] = useState(0);
   const [stream, setStream] = useState(null);
+  const [timeLeft, setTimeLeft] = useState(10);
   
   const navigate = useNavigate();
   const mediaRecorderRef = useRef(null);
@@ -63,12 +64,16 @@ export default function VoiceTest() {
       updateVolume();
     }
 
-    // Auto stop after 5 seconds
+    const timerInterval = setInterval(() => {
+      setTimeLeft(prev => prev - 1);
+    }, 1000);
+
     const timeout = setTimeout(() => {
       stopRecording();
-    }, 5000);
+    }, 10000);
     
     return () => {
+      clearInterval(timerInterval);
       clearTimeout(timeout);
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
@@ -79,6 +84,7 @@ export default function VoiceTest() {
   const startRecording = () => {
     if (!stream) return;
     setIsRecording(true);
+    setTimeLeft(10);
     audioChunksRef.current = [];
     
     mediaRecorderRef.current = new MediaRecorder(stream);
@@ -221,7 +227,7 @@ export default function VoiceTest() {
                 >
                   <Square size={24} fill="currentColor" />
                 </button>
-                <p className="text-rose-600 mt-4 font-medium animate-pulse">Recording ({Math.round(5 - (new Date().getTime() % 5000) / 1000)}s left)...</p>
+                <p className="text-rose-600 mt-4 font-medium animate-pulse">Recording ({timeLeft}s left)...</p>
               </motion.div>
             ) : (
               <button 

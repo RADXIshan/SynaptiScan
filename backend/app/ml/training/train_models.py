@@ -106,8 +106,7 @@ VOICE_FEATURES = [
     'MDVP:Fo(Hz)', 'MDVP:Fhi(Hz)', 'MDVP:Flo(Hz)', 'MDVP:Jitter(%)',
     'MDVP:Jitter(Abs)', 'MDVP:RAP', 'MDVP:PPQ', 'Jitter:DDP',
     'MDVP:Shimmer', 'MDVP:Shimmer(dB)', 'Shimmer:APQ3', 'Shimmer:APQ5',
-    'MDVP:APQ', 'Shimmer:DDA', 'NHR', 'HNR', 'RPDE', 'DFA',
-    'spread1', 'spread2', 'D2', 'PPE'
+    'MDVP:APQ', 'Shimmer:DDA', 'NHR', 'HNR'
 ]
 
 
@@ -133,10 +132,10 @@ def train_voice_model():
         n = 500
         labels = np.random.choice([0, 1], size=n, p=[0.25, 0.75])
         pd_m = [150, 200, 100, 0.006, 0.00005, 0.003, 0.003, 0.01, 0.03, 0.3,
-                0.015, 0.02, 0.02, 0.045, 0.02, 20.0, 0.5, 0.7, -5.0, 0.3, 2.5, 0.3]
+                0.015, 0.02, 0.02, 0.045, 0.02, 20.0]
         hc_m = [180, 220, 120, 0.002, 0.00001, 0.001, 0.001, 0.003, 0.01, 0.1,
-                0.005, 0.01, 0.01, 0.015, 0.002, 25.0, 0.4, 0.6, -6.5, 0.2, 2.0, 0.1]
-        features = np.zeros((n, 22))
+                0.005, 0.01, 0.01, 0.015, 0.002, 25.0]
+        features = np.zeros((n, 16))
         for i, y in enumerate(labels):
             mu = pd_m if y == 1 else hc_m
             features[i] = np.random.normal(mu, [abs(m)*0.15 + 1e-6 for m in mu])

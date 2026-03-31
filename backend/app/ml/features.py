@@ -281,8 +281,7 @@ def extract_voice_features(audio_path: str) -> list:
     ['MDVP:Fo(Hz)', 'MDVP:Fhi(Hz)', 'MDVP:Flo(Hz)', 'MDVP:Jitter(%)',
      'MDVP:Jitter(Abs)', 'MDVP:RAP', 'MDVP:PPQ', 'Jitter:DDP',
      'MDVP:Shimmer', 'MDVP:Shimmer(dB)', 'Shimmer:APQ3', 'Shimmer:APQ5',
-     'MDVP:APQ', 'Shimmer:DDA', 'NHR', 'HNR', 'RPDE', 'DFA',
-     'spread1', 'spread2', 'D2', 'PPE']
+     'MDVP:APQ', 'Shimmer:DDA', 'NHR', 'HNR']
     """
     temp_wav_path = None
     try:
@@ -344,22 +343,6 @@ def extract_voice_features(audio_path: str) -> list:
         hnr = call(harmonicity, "Get mean", 0, 0)
         nhr = 1.0 / hnr if hnr > 0 else 0.0
         
-        # Nonlinear features (approximations required for real-time without heavy C++ libs)
-        # Using basic spectral/entropy fallbacks to approximate the scale of DFA/PPE
-        # RPDE (Recurrence Period Density Entropy) proxy
-        rpde = 0.5 
-        # DFA (Detrended Fluctuation Analysis) proxy
-        dfa = 0.7 
-        # spread1, spread2, D2, PPE (Pitch Period Entropy) proxies
-        import scipy.stats as stats
-        freq_spectrum = snd.to_spectrum()
-        values = freq_spectrum.values
-        power = 10 * np.log10(np.abs(values)**2 + 1e-9)
-        spread1 = float(np.mean(power) / -10.0) - 5.0 # Typical range -4 to -8
-        spread2 = float(np.std(power) / 20.0) + 0.1 # Typical range 0.1 to 0.4
-        d2 = 2.0 # Typical range 1.8 to 3.0
-        ppe = float(stats.entropy(np.abs(power[0][:100]))) / 5.0 # Typical range 0.1 to 0.4
-
         features = [
             mean_pitch if not np.isnan(mean_pitch) else 150.0,
             max_pitch if not np.isnan(max_pitch) else 200.0,
@@ -376,13 +359,7 @@ def extract_voice_features(audio_path: str) -> list:
             apq11 if not np.isnan(apq11) else 2.0,
             dda if not np.isnan(dda) else 4.5,
             nhr if not np.isnan(nhr) else 0.02,
-            hnr if not np.isnan(hnr) else 20.0,
-            rpde,
-            dfa,
-            spread1,
-            spread2,
-            d2,
-            ppe
+            hnr if not np.isnan(hnr) else 20.0
         ]
         return [float(f) for f in features]
         
