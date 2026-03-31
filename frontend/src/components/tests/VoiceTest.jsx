@@ -176,9 +176,9 @@ export default function VoiceTest() {
           
           <button 
             onClick={startTestPhase} 
-            className="cursor-pointer py-4 px-8 bg-amber-500 hover:bg-amber-400 text-white rounded-xl font-medium transition-colors flex items-center gap-3 text-lg shadow-lg shadow-amber-500/30 active:scale-95 transform relative z-10"
+            className="cursor-pointer py-4 px-4 sm:px-8 bg-amber-500 hover:bg-amber-400 text-white rounded-xl font-medium transition-colors flex items-center justify-center text-center gap-2 sm:gap-3 text-base sm:text-lg shadow-lg shadow-amber-500/30 active:scale-95 transform w-full sm:w-auto relative z-10"
           >
-            <Play size={20} fill="currentColor" /> Grant Microphone permission & Start
+            <Play size={20} fill="currentColor" className="shrink-0" /> <span className="truncate whitespace-normal leading-tight">Grant Microphone permission & Start</span>
           </button>
         </div>
       </div>

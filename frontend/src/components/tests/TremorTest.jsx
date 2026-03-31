@@ -251,9 +251,9 @@ export default function TremorTest() {
       </Link>
       
       <div className="glass rounded-3xl p-8 relative overflow-hidden flex flex-col min-h-[800px] bg-white/60">
-        <header className="flex items-center justify-between mb-6 z-10">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-rose-100 text-rose-600 rounded-xl">
+        <header className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 mt-4 sm:mt-0 mb-6 z-10 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <div className="p-3 bg-rose-100 text-rose-600 rounded-xl mb-2 sm:mb-0">
               <Video size={32} />
             </div>
             <div>
@@ -271,7 +271,7 @@ export default function TremorTest() {
         ) : (
           <div className="flex flex-col gap-4 flex-1">
             {/* Full-frame video — no overlay */}
-            <div className="flex-1 bg-slate-900 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-center shadow-inner min-h-[480px]">
+            <div className="flex-1 bg-slate-900 rounded-2xl border border-slate-200 relative overflow-hidden flex items-center justify-center shadow-inner min-h-[300px] sm:min-h-[480px]">
               <video
                 ref={videoRef}
                 autoPlay

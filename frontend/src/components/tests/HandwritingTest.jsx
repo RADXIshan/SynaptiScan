@@ -186,9 +186,9 @@ export default function HandwritingTest() {
       </Link>
       
       <div className="glass rounded-3xl p-8 relative overflow-hidden flex flex-col min-h-[700px] sm:min-h-[600px] bg-white/60">
-        <header className="flex items-center justify-between mb-6 z-10">
-          <div className="flex items-center gap-4">
-            <div className="p-3 bg-violet-100 text-violet-600 rounded-xl">
+        <header className="flex flex-col sm:flex-row items-center justify-between gap-4 sm:gap-0 mt-4 sm:mt-0 mb-6 z-10 text-center sm:text-left">
+          <div className="flex flex-col sm:flex-row items-center gap-2 sm:gap-4">
+            <div className="p-3 bg-violet-100 text-violet-600 rounded-xl mb-2 sm:mb-0">
               <Edit3 size={32} />
             </div>
             <div>
@@ -196,7 +196,7 @@ export default function HandwritingTest() {
               <p className="text-slate-600 text-sm mt-1">Trace an outward spiral starting from the center.</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-3 mt-2 sm:mt-0">
             <button onClick={clearCanvas} className="cursor-pointer p-2 text-slate-500 hover:text-slate-800 bg-slate-100 rounded-lg transition-colors" title="Clear Canvas">
               <RotateCcw size={20} />
             </button>

@@ -31,9 +31,9 @@ export default function Signup() {
 
   return (
     <div className="min-h-screen flex items-center justify-center p-6 relative overflow-hidden animate-fade-in-up bg-slate-50">
-      <Link to="/" className="absolute top-6 left-6 px-10 flex items-center gap-2 text-xl font-bold text-slate-800 hover:opacity-80 transition-opacity z-20">
-        <img src="/logo.png" alt="SynaptiScan Logo" className="w-8 h-8" />
-        SynaptiScan
+      <Link to="/" className="absolute top-4 left-4 sm:top-6 sm:left-6 flex items-center gap-1 sm:gap-2 text-lg sm:text-xl font-bold text-slate-800 hover:opacity-80 transition-opacity z-20">
+        <img src="/logo.png" alt="SynaptiScan Logo" className="w-6 h-6 sm:w-8 sm:h-8" />
+        <span className="hidden xs:block sm:block">SynaptiScan</span>
       </Link>
       <div className="absolute top-1/4 right-1/4 w-[40%] h-[40%] rounded-full bg-emerald-200/50 blur-[120px] pointer-events-none" />
       <div className="absolute bottom-1/4 left-1/4 w-[40%] h-[40%] rounded-full bg-blue-200/50 blur-[120px] pointer-events-none" />
@@ -41,7 +41,7 @@ export default function Signup() {
       <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="glass rounded-3xl p-10 w-full max-w-md z-10 bg-white/80"
+        className="glass rounded-3xl p-6 sm:p-10 w-full max-w-md z-10 bg-white/80"
       >
         <div className="flex flex-col items-center mb-8">
           <img src="/logo.png" alt="SynaptiScan Logo" className="w-16 h-16 mb-4" />

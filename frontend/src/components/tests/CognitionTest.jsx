@@ -265,14 +265,14 @@ export default function CognitionTest({ sessionId, onComplete }) {
                 key={currentTrial}
                 initial={{ opacity: 0, scale: 0.8 }}
                 animate={{ opacity: 1, scale: 1 }}
-                className="text-7xl md:text-9xl font-black uppercase tracking-widest text-center"
+                className="text-5xl sm:text-7xl md:text-9xl font-black uppercase tracking-widest text-center"
                 style={{ color: displayedColor, filter: 'drop-shadow(0 4px 12px rgba(0,0,0,0.1))' }}
             >
                 {displayedWord}
             </motion.h1>
         </div>
 
-        <div className="w-full grid grid-cols-2 lg:grid-cols-5 gap-3 px-4">
+        <div className="w-full grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 px-4">
             {COLORS.map(c => (
                 <button
                     key={c.name}

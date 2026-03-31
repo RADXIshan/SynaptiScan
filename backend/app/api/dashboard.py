@@ -78,6 +78,19 @@ def create_journal_entry(entry: schemas.JournalEntryCreate, db: Session = Depend
     db.refresh(db_entry)
     return db_entry
 
+@router.delete("/journal/{journal_id}")
+def delete_journal_entry(journal_id: int, db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
+    db_entry = db.query(models.JournalEntry).filter(
+        models.JournalEntry.id == journal_id,
+        models.JournalEntry.user_id == current_user.id
+    ).first()
+    if not db_entry:
+        raise HTTPException(status_code=404, detail="Journal entry not found")
+    
+    db.delete(db_entry)
+    db.commit()
+    return {"message": "Journal entry deleted"}
+
 @router.get("/export")
 def export_dashboard_data(db: Session = Depends(get_db), current_user: models.User = Depends(get_current_user)):
     sessions = db.query(models.ScreeningSession).filter(

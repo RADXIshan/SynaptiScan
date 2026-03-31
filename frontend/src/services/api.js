@@ -70,6 +70,11 @@ export const dashboardApi = {
     return response.data;
   },
   
+  deleteJournalEntry: async (id) => {
+    const response = await api.delete(`dashboard/journal/${id}`);
+    return response.data;
+  },
+  
   exportCsv: async () => {
     const response = await api.get('dashboard/export', { responseType: 'blob' });
     return response.data;

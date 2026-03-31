@@ -9,12 +9,12 @@ export default function Layout() {
 
   return (
     <div className="min-h-screen flex flex-col">
-      <nav className="glass sticky top-0 z-50 px-6 py-4 flex items-center justify-between border-b border-white/10">
-        <Link to="/dashboard" className="flex items-center gap-3 text-xl font-bold text-slate-800">
-          <img src="/logo.png" alt="SynaptiScan Logo" className="w-8 h-8" />
-          SynaptiScan
+      <nav className="glass sticky top-0 z-50 px-3 sm:px-6 py-3 sm:py-4 flex items-center justify-between border-b border-white/10">
+        <Link to="/dashboard" className="flex items-center gap-2 sm:gap-3 text-lg sm:text-xl font-bold text-slate-800">
+          <img src="/logo.png" alt="SynaptiScan Logo" className="w-7 h-7 sm:w-8 sm:h-8" />
+          <span className="hidden xs:block sm:block">SynaptiScan</span>
         </Link>
-        <div className="flex items-center gap-6 text-sm font-medium">
+        <div className="flex items-center gap-3 sm:gap-6 text-xs sm:text-sm font-medium">
           <Link to="/dashboard" className={`relative transition-colors font-medium pb-1 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:origin-left before:scale-x-0 before:bg-emerald-600 before:transition-transform before:duration-300 hover:before:scale-x-100 ${location.pathname === '/dashboard' ? 'text-emerald-600 before:scale-x-100' : 'text-slate-600 hover:text-emerald-600'}`}>Dashboard</Link>
           <Link to="/test-select" className={`relative transition-colors font-medium pb-1 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:origin-left before:scale-x-0 before:bg-emerald-600 before:transition-transform before:duration-300 hover:before:scale-x-100 ${location.pathname === '/test-select' ? 'text-emerald-600 before:scale-x-100' : 'text-slate-600 hover:text-emerald-600'}`}>New Test</Link>
           

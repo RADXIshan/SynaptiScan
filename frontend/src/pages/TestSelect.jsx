@@ -19,7 +19,7 @@ export default function TestSelect() {
       <motion.div 
         initial={{ y: 20, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        className="glass p-10 md:p-16 rounded-3xl text-center max-w-2xl relative z-10 border-t-4 border-emerald-600"
+        className="glass p-6 sm:p-10 md:p-16 rounded-3xl text-center max-w-2xl w-full mx-4 relative z-10 border-t-4 border-emerald-600"
       >
         <div className="mx-auto w-20 h-20 bg-emerald-100 text-emerald-600 rounded-full flex items-center justify-center mb-8 shadow-lg shadow-emerald-500/10">
           <Activity size={40} />
@@ -33,8 +33,8 @@ export default function TestSelect() {
           You will now complete 6 short activities assessing your micro-motor functions, typing rhythm, vocal patterns, postural stability, and cognitive reaction times.
         </p>
 
-        <div className="flex items-center justify-center gap-2 text-sm text-emerald-600 font-medium mb-10 bg-emerald-50 py-2 px-4 rounded-full w-max mx-auto border border-emerald-200">
-          <ShieldCheck size={16} /> Data is anonymized and securely processed
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-2 text-sm text-emerald-600 font-medium mb-10 bg-emerald-50 py-2 px-4 rounded-2xl sm:rounded-full w-full max-w-sm sm:max-w-none sm:w-max mx-auto border border-emerald-200 text-center">
+          <ShieldCheck size={16} className="shrink-0" /> Data is anonymized and securely processed
         </div>
 
         <button

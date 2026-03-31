@@ -39,10 +39,10 @@ export default function Landing() {
       
       {/* Navigation */}
       <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200">
-        <div className="max-w-7xl mx-auto px-6 h-20 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-2 text-xl font-bold text-slate-800">
-            <img src="/logo.png" alt="SynaptiScan Logo" className="w-8 h-8" />
-            SynaptiScan
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 h-16 sm:h-20 flex items-center justify-between">
+          <Link to="/" className="flex items-center gap-2 text-lg sm:text-xl font-bold text-slate-800">
+            <img src="/logo.png" alt="SynaptiScan Logo" className="w-7 h-7 sm:w-8 sm:h-8" />
+            <span className="hidden xs:block sm:block">SynaptiScan</span>
           </Link>
           <div className="hidden md:flex items-center gap-8 font-medium text-sm">
             <a href="#features" className="relative transition-colors font-medium pb-1 before:absolute before:inset-x-0 before:bottom-0 before:h-px before:origin-left before:scale-x-0 before:bg-emerald-600 before:transition-transform before:duration-300 hover:before:scale-x-100 text-slate-600 hover:text-emerald-600">Features</a>
@@ -72,7 +72,7 @@ export default function Landing() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.1 }}
-            className="text-6xl md:text-8xl font-extrabold tracking-tight mb-8 text-slate-900 leading-tight"
+            className="text-4xl sm:text-6xl md:text-8xl font-extrabold tracking-tight mb-6 sm:mb-8 text-slate-900 leading-tight"
           >
             Detect Motor <br/>
             <span className="bg-clip-text text-transparent bg-linear-to-r from-emerald-600 to-emerald-400">Patterns Early.</span>
@@ -82,7 +82,7 @@ export default function Landing() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.2 }}
-            className="text-xl md:text-2xl text-slate-600 mb-12 max-w-2xl mx-auto leading-relaxed"
+            className="text-lg sm:text-xl md:text-2xl text-slate-600 mb-8 sm:mb-12 max-w-2xl mx-auto leading-relaxed"
           >
             SynaptiScan uses multi-modal AI to invisibly screen for early signs of motor-pathway disorders through your everyday digital interactions.
           </motion.p>
@@ -91,9 +91,9 @@ export default function Landing() {
             initial={{ y: 20, opacity: 0 }}
             animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.6, delay: 0.3 }}
-            className="flex flex-col sm:flex-row items-center justify-center gap-4"
+            className="flex flex-col sm:flex-row items-center justify-center gap-4 w-full sm:w-auto"
           >
-            <Link to="/signup" className="group w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-8 py-4 rounded-full font-bold text-lg shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 active:scale-95">
+            <Link to="/signup" className="group w-full sm:w-auto bg-emerald-600 hover:bg-emerald-500 text-white px-6 sm:px-8 py-3 sm:py-4 rounded-full font-bold text-base sm:text-lg shadow-xl shadow-emerald-600/30 transition-all flex items-center justify-center gap-3 active:scale-95">
               Start Screening Now
               <ArrowRight className="group-hover:translate-x-1 transition-transform" size={20} />
             </Link>

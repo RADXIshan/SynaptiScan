@@ -78,7 +78,21 @@ export default function KeystrokeTest() {
 
   if (step === 'demo') {
     return (
-      <div className="max-w-3xl mx-auto animate-fade-in-up">
+      <>
+      <div className="md:hidden flex flex-col items-center justify-center min-h-[50vh] glass rounded-3xl p-8 text-center text-slate-800 animate-fade-in-up mt-10">
+        <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-6">
+          <Keyboard size={32} />
+        </div>
+        <h1 className="text-2xl font-bold mb-4">Desktop Required</h1>
+        <p className="text-slate-600 mb-8 max-w-sm">
+          Keystroke Dynamics requires a physical keyboard to accurately measure typing rhythms. Please switch to a computer.
+        </p>
+        <Link to="/test/mouse" className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2">
+          Skip to next assessment <ArrowRight size={18} />
+        </Link>
+      </div>
+
+      <div className="hidden md:block max-w-3xl mx-auto animate-fade-in-up">
         <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-8 transition-colors">
           <ArrowLeft size={20} /> Restart Assessment
         </Link>
@@ -123,12 +137,27 @@ export default function KeystrokeTest() {
           </button>
         </div>
       </div>
+      </>
     );
   }
 
   return (
-    <div className="max-w-3xl mx-auto animate-fade-in-up">
-      <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-8 transition-colors">
+    <>
+      <div className="md:hidden flex flex-col items-center justify-center min-h-[50vh] glass rounded-3xl p-8 text-center text-slate-800 animate-fade-in-up mt-10">
+        <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-6">
+          <Keyboard size={32} />
+        </div>
+        <h1 className="text-2xl font-bold mb-4">Desktop Required</h1>
+        <p className="text-slate-600 mb-8 max-w-sm">
+          Keystroke Dynamics requires a physical keyboard to accurately measure typing rhythms. Please switch to a computer.
+        </p>
+        <Link to="/test/mouse" className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2">
+          Skip to next assessment <ArrowRight size={18} />
+        </Link>
+      </div>
+
+      <div className="hidden md:block max-w-3xl mx-auto animate-fade-in-up">
+        <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-8 transition-colors">
         <ArrowLeft size={20} /> Restart Assessment
       </Link>
       
@@ -185,5 +214,6 @@ export default function KeystrokeTest() {
         )}
       </div>
     </div>
+    </>
   );
 }

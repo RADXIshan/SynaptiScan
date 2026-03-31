@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router';
 import { motion } from 'framer-motion';
-import { Keyboard, MousePointer, Mic, Video, Edit3, ArrowRight, Activity, Download, Plus, BookOpen, Clock, Info, Brain, Sparkles } from 'lucide-react';
+import { Keyboard, MousePointer, Mic, Video, Edit3, ArrowRight, Activity, Download, Plus, BookOpen, Clock, Info, Brain, Sparkles, Trash2 } from 'lucide-react';
 import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer, ReferenceLine } from 'recharts';
 import { dashboardApi } from '../services/api';
 
@@ -121,6 +121,16 @@ export default function Dashboard() {
       console.error("Failed to save journal entry", err);
     } finally {
       setIsSubmittingJournal(false);
+    }
+  };
+
+  const handleDeleteEntry = async (id) => {
+    if (!window.confirm("Are you sure you want to delete this entry?")) return;
+    try {
+      await dashboardApi.deleteJournalEntry(id);
+      setJournalEntries(journalEntries.filter(entry => entry.id !== id));
+    } catch (err) {
+      console.error("Failed to delete journal entry", err);
     }
   };
 
@@ -380,9 +390,18 @@ export default function Dashboard() {
                         }`}>
                           {entry.entry_type}
                         </span>
-                        <span className="text-xs text-slate-400">
-                          {new Date(entry.created_at).toLocaleDateString()} at {new Date(entry.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
-                        </span>
+                        <div className="flex items-center gap-2">
+                          <span className="text-xs text-slate-400">
+                            {new Date(entry.created_at).toLocaleDateString()} at {new Date(entry.created_at).toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}
+                          </span>
+                          <button 
+                            onClick={() => handleDeleteEntry(entry.id)}
+                            className="text-slate-400 hover:text-rose-500 transition-colors p-1"
+                            title="Delete entry"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
                       </div>
                       <p className="text-slate-700 text-sm mt-1">{entry.content}</p>
                       {entry.severity && (

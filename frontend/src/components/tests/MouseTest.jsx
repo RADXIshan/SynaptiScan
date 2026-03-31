@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { motion } from 'framer-motion';
-import { MousePointer, ArrowLeft, CheckCircle, Play } from 'lucide-react';
+import { MousePointer, ArrowLeft, ArrowRight, CheckCircle, Play } from 'lucide-react';
 import { Link, useNavigate } from 'react-router';
 import { ingestionApi } from '../../services/api';
 
@@ -89,7 +89,21 @@ export default function MouseTest() {
 
   if (step === 'demo') {
     return (
-      <div className="max-w-4xl mx-auto animate-fade-in-up">
+      <>
+      <div className="md:hidden flex flex-col items-center justify-center min-h-[50vh] glass rounded-3xl p-8 text-center text-slate-800 animate-fade-in-up mt-10">
+        <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-6">
+          <MousePointer size={32} />
+        </div>
+        <h1 className="text-2xl font-bold mb-4">Desktop Required</h1>
+        <p className="text-slate-600 mb-8 max-w-sm">
+          Mouse Control requires a physical mouse or trackpad to accurately measure coordination. Please switch to a computer.
+        </p>
+        <Link to="/test/voice" className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2">
+          Skip to next assessment <ArrowRight size={18} />
+        </Link>
+      </div>
+
+      <div className="hidden md:block max-w-4xl mx-auto animate-fade-in-up">
         <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors">
           <ArrowLeft size={20} /> Restart Assessment
         </Link>
@@ -132,12 +146,27 @@ export default function MouseTest() {
           </button>
         </div>
       </div>
+      </>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto animate-fade-in-up">
-      <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors">
+    <>
+      <div className="md:hidden flex flex-col items-center justify-center min-h-[50vh] glass rounded-3xl p-8 text-center text-slate-800 animate-fade-in-up mt-10">
+        <div className="w-20 h-20 bg-rose-100 text-rose-600 rounded-full flex items-center justify-center mb-6">
+          <MousePointer size={32} />
+        </div>
+        <h1 className="text-2xl font-bold mb-4">Desktop Required</h1>
+        <p className="text-slate-600 mb-8 max-w-sm">
+          Mouse Control requires a physical mouse or trackpad to accurately measure coordination. Please switch to a computer.
+        </p>
+        <Link to="/test/voice" className="bg-slate-900 hover:bg-slate-800 text-white px-6 py-3 rounded-xl font-medium flex items-center gap-2">
+          Skip to next assessment <ArrowRight size={18} />
+        </Link>
+      </div>
+
+      <div className="hidden md:block max-w-4xl mx-auto animate-fade-in-up">
+        <Link to="/test-select" className="inline-flex items-center gap-2 text-slate-500 hover:text-slate-800 mb-6 transition-colors">
         <ArrowLeft size={20} /> Restart Assessment
       </Link>
       
@@ -186,5 +215,6 @@ export default function MouseTest() {
         )}
       </div>
     </div>
+    </>
   );
 }

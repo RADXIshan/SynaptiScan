@@ -324,18 +324,18 @@ def extract_voice_features(audio_path: str) -> list:
         
         # Jitter measurements
         point_process = call(snd, "To PointProcess (periodic, cc)", 75, 600)
-        jitter_percent = call(point_process, "Get jitter (local)", 0, 0, 0.0001, 0.02, 1.3) * 100
+        jitter_percent = call(point_process, "Get jitter (local)", 0, 0, 0.0001, 0.02, 1.3)
         jitter_abs = call(point_process, "Get jitter (local, absolute)", 0, 0, 0.0001, 0.02, 1.3)
-        rap = call(point_process, "Get jitter (rap)", 0, 0, 0.0001, 0.02, 1.3) * 100
-        ppq = call(point_process, "Get jitter (ppq5)", 0, 0, 0.0001, 0.02, 1.3) * 100
+        rap = call(point_process, "Get jitter (rap)", 0, 0, 0.0001, 0.02, 1.3)
+        ppq = call(point_process, "Get jitter (ppq5)", 0, 0, 0.0001, 0.02, 1.3)
         ddp = rap * 3  # Jitter:DDP is equivalent to RAP * 3
         
         # Shimmer measurements
-        shimmer_percent = call([snd, point_process], "Get shimmer (local)", 0, 0, 0.0001, 0.02, 1.3, 1.6) * 100
+        shimmer_percent = call([snd, point_process], "Get shimmer (local)", 0, 0, 0.0001, 0.02, 1.3, 1.6)
         shimmer_db = call([snd, point_process], "Get shimmer (local_dB)", 0, 0, 0.0001, 0.02, 1.3, 1.6)
-        apq3 = call([snd, point_process], "Get shimmer (apq3)", 0, 0, 0.0001, 0.02, 1.3, 1.6) * 100
-        apq5 = call([snd, point_process], "Get shimmer (apq5)", 0, 0, 0.0001, 0.02, 1.3, 1.6) * 100
-        apq11 = call([snd, point_process], "Get shimmer (apq11)", 0, 0, 0.0001, 0.02, 1.3, 1.6) * 100
+        apq3 = call([snd, point_process], "Get shimmer (apq3)", 0, 0, 0.0001, 0.02, 1.3, 1.6)
+        apq5 = call([snd, point_process], "Get shimmer (apq5)", 0, 0, 0.0001, 0.02, 1.3, 1.6)
+        apq11 = call([snd, point_process], "Get shimmer (apq11)", 0, 0, 0.0001, 0.02, 1.3, 1.6)
         dda = apq3 * 3 # Shimmer:DDA is equivalent to APQ3 * 3
         
         # Harmonicity
@@ -344,22 +344,22 @@ def extract_voice_features(audio_path: str) -> list:
         nhr = 1.0 / hnr if hnr > 0 else 0.0
         
         features = [
-            mean_pitch if not np.isnan(mean_pitch) else 150.0,
-            max_pitch if not np.isnan(max_pitch) else 200.0,
-            min_pitch if not np.isnan(min_pitch) else 100.0,
-            jitter_percent if not np.isnan(jitter_percent) else 0.5,
-            jitter_abs if not np.isnan(jitter_abs) else 0.00005,
-            rap if not np.isnan(rap) else 0.3,
-            ppq if not np.isnan(ppq) else 0.3,
-            ddp if not np.isnan(ddp) else 0.9,
-            shimmer_percent if not np.isnan(shimmer_percent) else 3.0,
-            shimmer_db if not np.isnan(shimmer_db) else 0.3,
-            apq3 if not np.isnan(apq3) else 1.5,
-            apq5 if not np.isnan(apq5) else 1.5,
-            apq11 if not np.isnan(apq11) else 2.0,
-            dda if not np.isnan(dda) else 4.5,
-            nhr if not np.isnan(nhr) else 0.02,
-            hnr if not np.isnan(hnr) else 20.0
+            mean_pitch if not np.isnan(mean_pitch) else 180.0,
+            max_pitch if not np.isnan(max_pitch) else 220.0,
+            min_pitch if not np.isnan(min_pitch) else 120.0,
+            jitter_percent if not np.isnan(jitter_percent) else 0.004,
+            jitter_abs if not np.isnan(jitter_abs) else 0.00003,
+            rap if not np.isnan(rap) else 0.002,
+            ppq if not np.isnan(ppq) else 0.002,
+            ddp if not np.isnan(ddp) else 0.006,
+            shimmer_percent if not np.isnan(shimmer_percent) else 0.02,
+            shimmer_db if not np.isnan(shimmer_db) else 0.2,
+            apq3 if not np.isnan(apq3) else 0.01,
+            apq5 if not np.isnan(apq5) else 0.01,
+            apq11 if not np.isnan(apq11) else 0.015,
+            dda if not np.isnan(dda) else 0.03,
+            nhr if not np.isnan(nhr) else 0.01,
+            hnr if not np.isnan(hnr) else 22.0
         ]
         return [float(f) for f in features]
         
