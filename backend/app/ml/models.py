@@ -64,8 +64,21 @@ def evaluate_voice(audio_path):
     cols = _get_features('voice', VOICE_FEATURES)
     X = pd.DataFrame([features], columns=cols)
     proba = model.predict_proba(X)[0]
-    prob = float(proba[1])
-    uncertainty = float(1.0 - max(proba))
+    raw_pd = float(proba[1])
+
+    # Bayes prior correction.
+    # The UCI Voice dataset has severe class imbalance (~75.4% PD).
+    # We correct to a conservative 5% screening baseline so ambiguous laptop 
+    # microphone recordings do not default to High Risk.
+    p_screen = 0.05
+    logit_offset = np.log(p_screen / (1 - p_screen)) - np.log(147 / 48)
+    raw_logit = np.log(raw_pd / (1.0 - raw_pd + 1e-9) + 1e-9)
+    corrected_logit = raw_logit + logit_offset
+    prob = float(np.clip(1.0 / (1.0 + np.exp(-corrected_logit)), 0.0, 1.0))
+
+    # Soft-clamp to [0.05, 0.90] to prevent extreme absolutes
+    prob = 0.05 + 0.85 * prob
+    uncertainty = float(1.0 - max(prob, 1.0 - prob))
     return prob, uncertainty
 
 
